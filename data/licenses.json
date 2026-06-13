@@ -14,9 +14,38 @@
     "calculator": "roof_v1",
     "questions": [
       {
+        "id": "projectType",
+        "type": "select",
+        "label": "Quel est votre projet ?",
+        "icon": "roof",
+        "options": [
+          "Réfection complète",
+          "Réparation",
+          "Démoussage",
+          "Isolation de toiture",
+          "Recherche de fuite"
+        ],
+        "required": true
+      },
+      {
+        "id": "buildingType",
+        "type": "select",
+        "label": "Quel type de bâtiment ?",
+        "icon": "building",
+        "options": [
+          "Maison individuelle",
+          "Garage",
+          "Dépendance",
+          "Immeuble",
+          "Local professionnel"
+        ],
+        "required": true
+      },
+      {
         "id": "surface",
         "type": "slider",
         "label": "Surface de la toiture",
+        "icon": "surface",
         "min": 20,
         "max": 500,
         "step": 5,
@@ -26,14 +55,113 @@
       {
         "id": "material",
         "type": "select",
-        "label": "Type de couverture",
-        "options": ["Tuile", "Ardoise", "Zinc", "Bac acier"],
+        "label": "Matériau de couverture",
+        "icon": "material",
+        "options": [
+          "Tuile terre cuite",
+          "Ardoise naturelle",
+          "Zinc",
+          "Bac acier"
+        ],
         "required": true
+      },
+      {
+        "id": "age",
+        "type": "select",
+        "label": "Âge de la toiture",
+        "icon": "calendar",
+        "options": [
+          "Moins de 10 ans",
+          "10 à 20 ans",
+          "20 à 30 ans",
+          "Plus de 30 ans",
+          "Je ne sais pas"
+        ],
+        "required": true
+      },
+      {
+        "id": "state",
+        "type": "select",
+        "label": "État général de la toiture",
+        "icon": "state",
+        "options": [
+          "Bon état",
+          "État moyen",
+          "Dégradée",
+          "Très dégradée"
+        ],
+        "required": true
+      },
+      {
+        "id": "sides",
+        "type": "select",
+        "label": "Nombre de pans",
+        "icon": "sides",
+        "options": [
+          "1 pan",
+          "2 pans",
+          "4 pans",
+          "Plus de 4 pans"
+        ],
+        "required": true
+      },
+      {
+        "id": "pente",
+        "type": "select",
+        "label": "Pente du toit",
+        "icon": "pente",
+        "options": [
+          "Faible",
+          "Moyenne",
+          "Forte",
+          "Très forte"
+        ],
+        "required": true
+      },
+      {
+        "id": "accessibility",
+        "type": "select",
+        "label": "Accessibilité du chantier",
+        "icon": "accessibility",
+        "options": [
+          "Plain-pied",
+          "1 étage",
+          "2 étages",
+          "3 étages ou plus"
+        ],
+        "required": true
+      },
+      {
+        "id": "depose",
+        "type": "select",
+        "label": "Dépose de l'ancienne couverture",
+        "icon": "depose",
+        "options": [
+          "Oui",
+          "Non",
+          "Je ne sais pas"
+        ],
+        "required": true
+      },
+      {
+        "id": "options",
+        "type": "multiselect",
+        "label": "Options supplémentaires",
+        "icon": "options",
+        "options": [
+          "Velux",
+          "Gouttières",
+          "Isolation",
+          "Traitement charpente",
+          "Écran sous toiture"
+        ],
+        "required": false
       },
       {
         "id": "postalCode",
         "type": "text",
         "label": "Code postal",
+        "icon": "postal",
         "placeholder": "75001",
         "required": true
       }
