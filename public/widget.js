@@ -435,12 +435,12 @@
     } else if (currentStep === questions.length) {
       calculateQuote();  // Passage direct au calcul après la dernière question
     } else if (currentStep === questions.length + 1 && quoteResult) {
-      renderResult(container);
-    } else if (currentStep === questions.length + 2) {
-      renderRecap(container);
-    } else if (currentStep === questions.length + 3) {
-      renderSuccess(container);
-    }
+  renderResult(container);  // Page avec récap + estimation + bouton
+} else if (currentStep === questions.length + 2) {
+  renderLeadForm(container);  // Formulaire lead
+} else if (currentStep === questions.length + 3) {
+  renderSuccess(container);
+}
   }
 
 // ============================================================
@@ -619,48 +619,66 @@
   }
 
 // ============================================================
-// SECTION 8 : ÉCRAN RÉSULTAT
+// SECTION 8 : ÉCRAN RÉSULTAT + RÉCAPITULATIF
 // ============================================================
   function renderResult(container) {
-    const html = `
-      <div class="rw-content">
-        <div class="rw-step">
-          <h2 class="rw-question">Votre estimation</h2>
-          <div class="rw-result-card">
-            <div class="rw-result-label">Estimation prévisionnelle</div>
-            <div class="rw-result-price">${quoteResult.lowEstimate.toLocaleString()}€ – ${quoteResult.highEstimate.toLocaleString()}€</div>
-            <div class="rw-result-delay">Durée estimée : ${quoteResult.daysEstimate.min} à ${quoteResult.daysEstimate.max} jours</div>
-          </div>
-          <div class="rw-navigation">
-            <button class="rw-btn rw-btn-prev" id="rw-prev">Modifier</button>
-            <button class="rw-btn rw-btn-next" id="rw-next">Continuer</button>
-          </div>
-        </div>
-      </div>
-    `;
-    container.innerHTML = html;
-    document.getElementById('rw-prev').addEventListener('click', prevStep);
-    document.getElementById('rw-next').addEventListener('click', () => {
-      currentStep = config.questions.length + 2;
-      render();
-    });
-  }
-
-// ============================================================
-// SECTION 9 : RÉCAPITULATIF + FORMULAIRE LEAD
-// ============================================================
-  function renderRecap(container) {
+    // Construction du récapitulatif des réponses
     let recapHtml = '<div class="rw-recap">';
-    for (const [key, value] of Object.entries(answers)) {
-      recapHtml += `<div class="rw-recap-item"><strong>${key}</strong>: ${value}</div>`;
-    }
+    recapHtml += '<h3 style="margin-bottom: 1rem; font-size: 1rem;">📋 Récapitulatif de vos réponses</h3>';
+    
+    // Parcourir les questions configurées pour avoir le bon ordre et les bons libellés
+    config.questions.forEach(question => {
+      const value = answers[question.id];
+      if (value && value !== '') {
+        recapHtml += `<div class="rw-recap-item">
+          <strong>${question.label}</strong> : ${value}
+        </div>`;
+      }
+    });
     recapHtml += '</div>';
     
     const html = `
       <div class="rw-content">
         <div class="rw-step">
-          <h2 class="rw-question">Vos informations</h2>
+          <div class="rw-result-card">
+            <div class="rw-result-label">Estimation prévisionnelle</div>
+            <div class="rw-result-price">${quoteResult.lowEstimate.toLocaleString()}€ – ${quoteResult.highEstimate.toLocaleString()}€</div>
+            <div class="rw-result-delay">⏱ Durée estimée : ${quoteResult.daysEstimate.min} à ${quoteResult.daysEstimate.max} jours</div>
+          </div>
+          
           ${recapHtml}
+          
+          <div class="rw-navigation">
+            <button class="rw-btn rw-btn-prev" id="rw-prev">← Modifier mes réponses</button>
+            <button class="rw-btn rw-btn-submit" id="rw-next">📩 Recevoir les détails du devis →</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    document.getElementById('rw-prev').addEventListener('click', () => {
+      currentStep = 0;
+      render();
+    });
+    
+    document.getElementById('rw-next').addEventListener('click', () => {
+      currentStep = config.questions.length + 2; // Va vers le formulaire lead
+      render();
+    });
+  }
+
+    // ============================================================
+// SECTION 9 : FORMULAIRE LEAD (après clic sur "Recevoir les détails")
+// ============================================================
+  function renderLeadForm(container) {
+    const html = `
+      <div class="rw-content">
+        <div class="rw-step">
+          <h2 class="rw-question">Recevez votre devis détaillé</h2>
+          <p style="color: var(--rw-gray-600); margin-bottom: 1.5rem;">Remplissez ce formulaire, votre artisan vous recontactera sous 24h.</p>
+          
           <div class="rw-form-group">
             <label>Nom complet</label>
             <input type="text" id="lead-name" class="rw-input" placeholder="Jean Dupont">
@@ -673,15 +691,21 @@
             <label>Email</label>
             <input type="email" id="lead-email" class="rw-input" placeholder="contact@exemple.fr">
           </div>
+          
           <div class="rw-navigation">
-            <button class="rw-btn rw-btn-prev" id="rw-prev">Retour</button>
-            <button class="rw-btn rw-btn-submit" id="rw-submit">Recevoir mon estimation</button>
+            <button class="rw-btn rw-btn-prev" id="rw-prev">← Retour</button>
+            <button class="rw-btn rw-btn-submit" id="rw-submit">Envoyer ma demande →</button>
           </div>
         </div>
       </div>
     `;
     container.innerHTML = html;
-    document.getElementById('rw-prev').addEventListener('click', prevStep);
+    
+    document.getElementById('rw-prev').addEventListener('click', () => {
+      currentStep = config.questions.length + 1; // Retour à l'estimation
+      render();
+    });
+    
     document.getElementById('rw-submit').addEventListener('click', submitLead);
   }
 
