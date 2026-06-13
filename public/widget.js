@@ -448,6 +448,7 @@
 // ============================================================
   function renderQuestion(container, question, step, total) {
     const progress = ((step + 1) / total) * 100;
+    const isLastQuestion = (step + 1 === total);
     
     let html = `
       <div class="rw-progress-container">
@@ -510,11 +511,16 @@
     const remaining = total - step - 1;
     let assuranceMsg = remaining <= 2 ? 'Plus que quelques étapes pour votre estimation' : 'Données confidentielles · Sans engagement';
     
+    // Bouton différent selon que c'est la dernière question ou non
+    const buttonHtml = isLastQuestion 
+      ? '<button class="rw-btn rw-btn-submit" id="rw-next">Voir mon estimation →</button>'
+      : '<button class="rw-btn rw-btn-next" id="rw-next">Continuer →</button>';
+    
     html += `
         </div>
         <div class="rw-navigation">
           <button class="rw-btn rw-btn-prev" id="rw-prev" ${step === 0 ? 'disabled' : ''}>Retour</button>
-          <button class="rw-btn rw-btn-next" id="rw-next">Continuer</button>
+          ${buttonHtml}
         </div>
         <div class="rw-assurance">${assuranceMsg}</div>
       </div>
@@ -562,7 +568,36 @@
     }
     
     document.getElementById('rw-prev').addEventListener('click', prevStep);
-    document.getElementById('rw-next').addEventListener('click', nextStep);
+    
+    // Gestion du bouton next (Continuer ou Voir mon estimation)
+    document.getElementById('rw-next').addEventListener('click', () => {
+      if (isLastQuestion) {
+        // Dernière question → validation et calcul
+        const questionData = config.questions[currentStep];
+        let value = answers[questionData.id];
+        
+        // Pour les champs input, récupérer la valeur actuelle
+        if (questionData.type === 'text' || questionData.type === 'number') {
+          const inputElement = document.getElementById(`input-${questionData.id}`);
+          if (inputElement) {
+            value = inputElement.value;
+            answers[questionData.id] = value;
+          }
+        }
+        
+        // Vérification du champ requis
+        if (questionData.required && (!value || value === '')) {
+          alert('Ce champ est requis');
+          return;
+        }
+        
+        // Passer au calcul
+        currentStep++;
+        render();
+      } else {
+        nextStep();
+      }
+    });
   }
 
 // ============================================================
