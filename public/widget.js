@@ -1,7 +1,7 @@
+// ============================================================
+// SECTION 1 : RÉCUPÉRATION DE LA LICENCE
+// ============================================================
 (function() {
-  // ============================================================
-  // RÉCUPÉRATION ROBUSTE DE LA LICENCE
-  // ============================================================
   let LICENSE_KEY = null;
   
   // Méthode 1 : depuis l'URL du script
@@ -33,26 +33,26 @@
     LICENSE_KEY = urlParams.get('license');
   }
   
-  // Méthode 4 : valeur par défaut (pour dépannage)
+  // Méthode 4 : valeur par défaut
   if (!LICENSE_KEY) {
     LICENSE_KEY = 'COUVREUR_ABC123';
     console.warn('[Widget] Licence par défaut utilisée');
   }
   
   console.log('[Widget] Licence :', LICENSE_KEY);
-  
-  // ============================================================
-  // CONFIGURATION
-  // ============================================================
+
+// ============================================================
+// SECTION 2 : CONFIGURATION GLOBALE
+// ============================================================
   const API_BASE = 'https://devisexpress-two.vercel.app';
   let currentStep = 0;
   let answers = {};
   let config = null;
   let quoteResult = null;
 
-  // ============================================================
-  // INJECTION CSS PREMIUM
-  // ============================================================
+// ============================================================
+// SECTION 3 : INJECTION DU CSS PREMIUM
+// ============================================================
   function injectCSS() {
     if (document.getElementById('rw-widget-styles')) return;
     
@@ -357,9 +357,9 @@
     document.head.appendChild(style);
   }
 
-  // ============================================================
-  // FONCTIONS PRINCIPALES
-  // ============================================================
+// ============================================================
+// SECTION 4 : FONCTIONS DE BASE (init, loadConfig, showError)
+// ============================================================
   async function init() {
     injectCSS();
     const isValid = await loadConfig();
@@ -410,6 +410,9 @@
     `;
   }
 
+// ============================================================
+// SECTION 5 : RENDU PRINCIPAL (render)
+// ============================================================
   function render() {
     let container = document.getElementById('roof-widget');
     if (!container) {
@@ -440,6 +443,9 @@
     }
   }
 
+// ============================================================
+// SECTION 6 : RENDU D'UNE QUESTION (slider, select, input)
+// ============================================================
   function renderQuestion(container, question, step, total) {
     const progress = ((step + 1) / total) * 100;
     
@@ -516,6 +522,7 @@
     
     container.innerHTML = html;
     
+    // Événements pour les sliders
     if (question.type === 'slider') {
       const slider = document.getElementById(`input-${question.id}`);
       const display = document.getElementById(`slider-value-${question.id}`);
@@ -529,6 +536,7 @@
       }
     }
     
+    // Événements pour les selects (PAS d'auto-advancement)
     if (question.type === 'select') {
       document.querySelectorAll('.rw-option-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -536,15 +544,31 @@
           answers[question.id] = value;
           document.querySelectorAll('.rw-option-card').forEach(c => c.classList.remove('rw-option-card--selected'));
           card.classList.add('rw-option-card--selected');
-          setTimeout(() => nextStep(), 300);
+          // PAS de auto-next - l'utilisateur doit cliquer sur Continuer
         });
       });
+    }
+    
+    // Événements pour les inputs (sauvegarde en temps réel)
+    if (question.type === 'text' || question.type === 'number') {
+      const inputElement = document.getElementById(`input-${question.id}`);
+      if (inputElement) {
+        inputElement.addEventListener('input', (e) => {
+          answers[question.id] = e.target.value;
+        });
+        if (answers[question.id]) {
+          inputElement.value = answers[question.id];
+        }
+      }
     }
     
     document.getElementById('rw-prev').addEventListener('click', prevStep);
     document.getElementById('rw-next').addEventListener('click', nextStep);
   }
 
+// ============================================================
+// SECTION 7 : ICÔNES SVG
+// ============================================================
   function getIconForOption(questionId, option) {
     const iconMap = {
       surface: 'surface',
@@ -569,6 +593,9 @@
     return `<img src="${API_BASE}/icons/${iconName}.svg" alt="" class="rw-option-icon-svg">`;
   }
 
+// ============================================================
+// SECTION 8 : ÉCRAN DÉLAI
+// ============================================================
   function renderDelay(container) {
     const delayOptions = [
       { value: 'urgent', label: 'Urgent (moins d\'une semaine)' },
@@ -624,6 +651,9 @@
     document.getElementById('rw-prev').addEventListener('click', prevStep);
   }
 
+// ============================================================
+// SECTION 9 : ÉCRAN RÉSULTAT
+// ============================================================
   function renderResult(container) {
     const html = `
       <div class="rw-content">
@@ -649,6 +679,9 @@
     });
   }
 
+// ============================================================
+// SECTION 10 : RÉCAPITULATIF + FORMULAIRE LEAD
+// ============================================================
   function renderRecap(container) {
     let recapHtml = '<div class="rw-recap">';
     for (const [key, value] of Object.entries(answers)) {
@@ -685,6 +718,9 @@
     document.getElementById('rw-submit').addEventListener('click', submitLead);
   }
 
+// ============================================================
+// SECTION 11 : ÉCRAN SUCCÈS
+// ============================================================
   function renderSuccess(container) {
     container.innerHTML = `
       <div class="rw-content">
@@ -699,6 +735,9 @@
     document.getElementById('rw-restart').addEventListener('click', () => location.reload());
   }
 
+// ============================================================
+// SECTION 12 : CALCUL DEVIS (API calculate)
+// ============================================================
   async function calculateQuote() {
     const container = document.getElementById('roof-widget');
     container.innerHTML = '<div class="rw-loading">Calcul en cours...</div>';
@@ -720,6 +759,9 @@
     }
   }
 
+// ============================================================
+// SECTION 13 : ENVOI LEAD (API lead)
+// ============================================================
   async function submitLead() {
     const name = document.getElementById('lead-name')?.value;
     const phone = document.getElementById('lead-phone')?.value;
@@ -749,22 +791,27 @@
     }
   }
 
+// ============================================================
+// SECTION 14 : NAVIGATION (nextStep, prevStep)
+// ============================================================
   function nextStep() {
     if (currentStep < config.questions.length) {
       const question = config.questions[currentStep];
       let value = answers[question.id];
       
-      if (question.type === 'input') {
-        value = document.getElementById(`input-${question.id}`)?.value;
+      // Pour les champs input, récupérer la valeur actuelle du DOM
+      if (question.type === 'text' || question.type === 'number') {
+        const inputElement = document.getElementById(`input-${question.id}`);
+        if (inputElement) {
+          value = inputElement.value;
+          answers[question.id] = value;
+        }
       }
       
-      if (question.required && !value) {
+      // Vérification du champ requis
+      if (question.required && (!value || value === '')) {
         alert('Ce champ est requis');
         return;
-      }
-      
-      if (question.type === 'input') {
-        answers[question.id] = value;
       }
       
       currentStep++;
@@ -782,9 +829,9 @@
     }
   }
 
-  // ============================================================
-  // DÉMARRAGE
-  // ============================================================
+// ============================================================
+// SECTION 15 : DÉMARRAGE
+// ============================================================
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
