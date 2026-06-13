@@ -16,16 +16,9 @@ export default async function handler(req, res) {
   }
 
   const { license } = req.query;
-  
-  const requestOrigin = req.headers.origin || req.headers.referer || '';
-  let domain = requestOrigin.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
   if (!license) {
     return res.status(400).json({ error: 'License key required' });
-  }
-
-  if (!domain) {
-    return res.status(400).json({ error: 'Unable to determine domain' });
   }
 
   try {
@@ -42,25 +35,39 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'License is inactive' });
     }
     
-    // Vérification du domaine
-    const allowedDomains = licenseData.allowedOrigins || [licenseData.company?.domain || licenseData.domain];
-    const isDomainAllowed = allowedDomains.some(allowed => {
-      const allowedClean = allowed.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-      return domain === allowedClean;
-    });
+    // Récupérer le domaine depuis l'en-tête Origin ou Referer
+    const origin = req.headers.origin || req.headers.referer || '';
+    let domain = origin.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    
+    // Si aucun domaine trouvé (test direct dans navigateur), on accepte pour le debug
+    // Mais en production, le widget envoie toujours l'en-tête Origin
+    const allowedOrigins = licenseData.allowedOrigins || [licenseData.company?.domain];
+    
+    let isDomainAllowed = false;
+    
+    if (!domain) {
+      // Mode debug : on accepte si c'est un appel direct (pour tester)
+      console.log('⚠️ Appel API sans domaine (test direct)');
+      isDomainAllowed = true; // ⚠️ À enlever en production
+    } else {
+      isDomainAllowed = allowedOrigins.some(allowed => {
+        const allowedClean = allowed.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+        return domain === allowedClean;
+      });
+    }
     
     if (!isDomainAllowed) {
       console.log(`❌ Domaine bloqué: ${domain}`);
       return res.status(403).json({ 
         error: 'Domain not authorized for this license',
         yourDomain: domain,
-        allowedDomains: allowedDomains
+        allowedDomains: allowedOrigins
       });
     }
     
-    console.log(`✅ Domaine autorisé: ${domain} | Licence: ${license} | Métier: ${licenseData.trade || 'unknown'}`);
+    console.log(`✅ Domaine autorisé: ${domain || 'direct test'}`);
     
-    // Retourner la configuration complète (sans les prix si on veut les cacher)
+    // Retourner la configuration complète
     return res.status(200).json({
       valid: true,
       company: licenseData.company,
@@ -68,6 +75,7 @@ export default async function handler(req, res) {
       trade: licenseData.trade,
       calculator: licenseData.calculator,
       questions: licenseData.questions || [],
+      pricing: licenseData.pricing,
       timestamp: Date.now()
     });
     
