@@ -443,8 +443,8 @@
 }
   }
 
-// ============================================================
-// SECTION 6 : RENDU D'UNE QUESTION (slider, select, input)
+ // ============================================================
+// SECTION 6 : RENDU D'UNE QUESTION (slider, select, multiselect, input)
 // ============================================================
   function renderQuestion(container, question, step, total) {
     const progress = ((step + 1) / total) * 100;
@@ -497,6 +497,24 @@
         html += '</div>';
         break;
         
+      case 'multiselect':
+        const selectedOptions = answers[question.id] || [];
+        html += '<div class="rw-options-grid" id="options-grid">';
+        question.options.forEach(opt => {
+          const isSelected = selectedOptions.includes(opt);
+          html += `
+            <div class="rw-option-card ${isSelected ? 'rw-option-card--selected' : ''}" data-value="${opt}">
+              <div class="rw-option-icon">${getIconForOption(question.id, opt)}</div>
+              <div class="rw-option-content">
+                <div class="rw-option-title">${opt}</div>
+              </div>
+              <div class="rw-option-check">${isSelected ? '✓' : ''}</div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        break;
+        
       case 'text':
       case 'number':
         html += `
@@ -542,7 +560,7 @@
       }
     }
     
-    // Événements pour les selects (PAS d'auto-advancement)
+    // Événements pour les selects (un seul choix)
     if (question.type === 'select') {
       document.querySelectorAll('.rw-option-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -550,6 +568,33 @@
           answers[question.id] = value;
           document.querySelectorAll('.rw-option-card').forEach(c => c.classList.remove('rw-option-card--selected'));
           card.classList.add('rw-option-card--selected');
+        });
+      });
+    }
+    
+    // Événements pour les multiselects (plusieurs choix possibles)
+    if (question.type === 'multiselect') {
+      document.querySelectorAll('.rw-option-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const value = card.dataset.value;
+          let selected = answers[question.id] || [];
+          
+          if (selected.includes(value)) {
+            // Retirer la valeur
+            selected = selected.filter(v => v !== value);
+            card.classList.remove('rw-option-card--selected');
+          } else {
+            // Ajouter la valeur
+            selected.push(value);
+            card.classList.add('rw-option-card--selected');
+          }
+          answers[question.id] = selected;
+          
+          // Mettre à jour le check visuel
+          const checkSpan = card.querySelector('.rw-option-check');
+          if (checkSpan) {
+            checkSpan.textContent = selected.includes(value) ? '✓' : '';
+          }
         });
       });
     }
@@ -585,8 +630,17 @@
           }
         }
         
-        // Vérification du champ requis
-        if (questionData.required && (!value || value === '')) {
+        // Pour les multiselects, vérifier qu'au moins une option est sélectionnée (si requis)
+        if (questionData.type === 'multiselect' && questionData.required) {
+          const selectedValues = answers[questionData.id] || [];
+          if (selectedValues.length === 0) {
+            alert('Veuillez sélectionner au moins une option');
+            return;
+          }
+        }
+        
+        // Vérification du champ requis (pour les autres types)
+        if (questionData.required && (!value || value === '' || (Array.isArray(value) && value.length === 0))) {
           alert('Ce champ est requis');
           return;
         }
