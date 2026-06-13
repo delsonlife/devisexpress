@@ -1,5 +1,7 @@
 (function() {
-  // Récupération robuste de la licence
+  // ============================================================
+  // RÉCUPÉRATION ROBUSTE DE LA LICENCE
+  // ============================================================
   let LICENSE_KEY = null;
   
   // Méthode 1 : depuis l'URL du script
@@ -25,259 +27,341 @@
     }
   }
   
-  // Méthode 3 : depuis l'URL de la page
+  // Méthode 3 : depuis l'URL de la page (fallback)
   if (!LICENSE_KEY) {
     const urlParams = new URLSearchParams(window.location.search);
     LICENSE_KEY = urlParams.get('license');
   }
   
-  // Méthode 4 : valeur par défaut
+  // Méthode 4 : valeur par défaut (pour dépannage)
   if (!LICENSE_KEY) {
     LICENSE_KEY = 'COUVREUR_ABC123';
     console.warn('[Widget] Licence par défaut utilisée');
   }
   
-  console.log('[Widget] Licence détectée :', LICENSE_KEY);
+  console.log('[Widget] Licence :', LICENSE_KEY);
   
+  // ============================================================
+  // CONFIGURATION
+  // ============================================================
   const API_BASE = 'https://devisexpress-two.vercel.app';
   let currentStep = 0;
   let answers = {};
   let config = null;
   let quoteResult = null;
 
+  // ============================================================
+  // INJECTION CSS PREMIUM
+  // ============================================================
+  function injectCSS() {
+    if (document.getElementById('rw-widget-styles')) return;
+    
+    const css = `
+      :root {
+        --rw-primary: #ff6b00;
+        --rw-primary-dark: #e05a00;
+        --rw-gray-100: #f3f4f6;
+        --rw-gray-200: #e5e7eb;
+        --rw-gray-400: #9ca3af;
+        --rw-gray-600: #4b5563;
+        --rw-gray-900: #111827;
+        --rw-radius-lg: 1rem;
+        --rw-radius-xl: 1.5rem;
+        --rw-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --rw-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      }
 
-function injectCSS() {
-  const css = `
-    :root {
-      --rw-primary: #ff6b00;
-      --rw-primary-dark: #e05a00;
-      --rw-gray-100: #f3f4f6;
-      --rw-gray-200: #e5e7eb;
-      --rw-gray-600: #4b5563;
-      --rw-gray-900: #111827;
-      --rw-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-      --rw-radius-xl: 1.5rem;
-    }
+      .rw-widget {
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        background: white;
+        border-radius: var(--rw-radius-xl);
+        box-shadow: var(--rw-shadow-lg);
+        overflow: hidden;
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+      }
 
-    .rw-widget {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: white;
-      border-radius: var(--rw-radius-xl);
-      box-shadow: var(--rw-shadow-lg);
-      overflow: hidden;
-      width: 100%;
-      max-width: 720px;
-      margin: 0 auto;
-    }
+      .rw-progress-container {
+        padding: 1.5rem 2rem 0.5rem;
+      }
 
-    .rw-progress-container {
-      padding: 1.75rem 2rem 0.5rem;
-    }
+      .rw-progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--rw-gray-600);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
 
-    .rw-progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8125rem;
-      color: var(--rw-gray-600);
-      margin-bottom: 0.625rem;
-    }
+      .rw-progress-bar {
+        height: 0.25rem;
+        background: var(--rw-gray-200);
+        border-radius: 9999px;
+        overflow: hidden;
+      }
 
-    .rw-progress-bar {
-      height: 0.3125rem;
-      background: var(--rw-gray-200);
-      border-radius: 9999px;
-      overflow: hidden;
-    }
+      .rw-progress-fill {
+        height: 100%;
+        background: var(--rw-primary);
+        border-radius: 9999px;
+        transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      }
 
-    .rw-progress-fill {
-      height: 100%;
-      background: var(--rw-primary);
-      border-radius: 9999px;
-      transition: width 0.3s ease;
-    }
+      .rw-content {
+        padding: 2rem;
+      }
 
-    .rw-content {
-      padding: 2rem;
-    }
+      .rw-question {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--rw-gray-900);
+        margin-bottom: 1.5rem;
+        line-height: 1.3;
+      }
 
-    .rw-question {
-      font-size: 1.75rem;
-      font-weight: 600;
-      color: var(--rw-gray-900);
-      margin-bottom: 1.5rem;
-    }
+      .rw-options-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
 
-    .rw-options-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
+      .rw-option-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        background: white;
+        border: 1px solid var(--rw-gray-200);
+        border-radius: var(--rw-radius-lg);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
 
-    .rw-option-card {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      background: white;
-      border: 1px solid var(--rw-gray-200);
-      border-radius: 1rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+      .rw-option-card:hover {
+        border-color: var(--rw-primary);
+        background: #fff7ed;
+        transform: translateY(-1px);
+        box-shadow: var(--rw-shadow-md);
+      }
 
-    .rw-option-card:hover {
-      border-color: var(--rw-primary);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
+      .rw-option-card--selected {
+        border-color: var(--rw-primary);
+        background: #fff7ed;
+        box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+      }
 
-    .rw-option-card--selected {
-      border-color: var(--rw-primary);
-      background: #fff7ed;
-    }
+      .rw-option-icon-svg {
+        width: 28px;
+        height: 28px;
+      }
 
-    .rw-option-icon-svg {
-      width: 24px;
-      height: 24px;
-    }
+      .rw-option-title {
+        font-weight: 500;
+        color: var(--rw-gray-900);
+      }
 
-    .rw-option-title {
-      font-weight: 500;
-      color: var(--rw-gray-900);
-    }
+      .rw-slider-container {
+        margin: 1.5rem 0;
+      }
 
-    .rw-slider-container {
-      margin-top: 1.5rem;
-    }
+      .rw-slider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 1rem;
+      }
 
-    .rw-slider-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
+      .rw-slider-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--rw-primary);
+      }
 
-    .rw-slider-value {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--rw-primary);
-    }
+      .rw-slider {
+        width: 100%;
+        height: 0.25rem;
+        -webkit-appearance: none;
+        background: var(--rw-gray-200);
+        border-radius: 9999px;
+      }
 
-    .rw-slider {
-      width: 100%;
-      height: 0.3125rem;
-      -webkit-appearance: none;
-      background: var(--rw-gray-200);
-      border-radius: 9999px;
-    }
+      .rw-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 1.25rem;
+        height: 1.25rem;
+        background: var(--rw-primary);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: var(--rw-shadow-md);
+        transition: transform 0.1s;
+      }
 
-    .rw-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 1.125rem;
-      height: 1.125rem;
-      background: var(--rw-primary);
-      border-radius: 50%;
-      cursor: pointer;
-    }
+      .rw-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
 
-    .rw-input {
-      width: 100%;
-      padding: 0.875rem 1rem;
-      border: 1px solid var(--rw-gray-200);
-      border-radius: 0.75rem;
-      font-size: 1rem;
-    }
+      .rw-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--rw-gray-200);
+        border-radius: var(--rw-radius-lg);
+        font-size: 1rem;
+        transition: all 0.2s;
+      }
 
-    .rw-input:focus {
-      outline: none;
-      border-color: var(--rw-primary);
-    }
+      .rw-input:focus {
+        outline: none;
+        border-color: var(--rw-primary);
+        box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+      }
 
-    .rw-navigation {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--rw-gray-200);
-    }
+      .rw-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--rw-gray-200);
+      }
 
-    .rw-btn {
-      padding: 0.75rem 1.5rem;
-      border-radius: 9999px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      font-size: 0.875rem;
-    }
+      .rw-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+      }
 
-    .rw-btn-prev {
-      background: transparent;
-      color: var(--rw-gray-600);
-    }
+      .rw-btn-prev {
+        background: transparent;
+        color: var(--rw-gray-600);
+      }
 
-    .rw-btn-prev:hover:not(:disabled) {
-      background: var(--rw-gray-100);
-    }
+      .rw-btn-prev:hover:not(:disabled) {
+        background: var(--rw-gray-100);
+        color: var(--rw-gray-900);
+      }
 
-    .rw-btn-prev:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+      .rw-btn-prev:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
 
-    .rw-btn-next, .rw-btn-submit {
-      background: var(--rw-primary);
-      color: white;
-    }
+      .rw-btn-next, .rw-btn-submit {
+        background: var(--rw-primary);
+        color: white;
+        box-shadow: var(--rw-shadow-md);
+      }
 
-    .rw-btn-next:hover, .rw-btn-submit:hover {
-      background: var(--rw-primary-dark);
-    }
+      .rw-btn-next:hover, .rw-btn-submit:hover {
+        background: var(--rw-primary-dark);
+        transform: translateY(-1px);
+      }
 
-    .rw-result-card {
-      background: linear-gradient(135deg, var(--rw-primary) 0%, var(--rw-primary-dark) 100%);
-      border-radius: 1.5rem;
-      padding: 2rem;
-      text-align: center;
-      color: white;
-    }
+      .rw-result-card {
+        background: linear-gradient(135deg, var(--rw-primary) 0%, var(--rw-primary-dark) 100%);
+        border-radius: var(--rw-radius-xl);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+        margin: 1rem 0;
+      }
 
-    .rw-result-price {
-      font-size: 2rem;
-      font-weight: 700;
-    }
+      .rw-result-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+      }
 
-    .rw-assurance {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.75rem;
-      color: var(--rw-gray-600);
-    }
+      .rw-result-price {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
 
-    .rw-error {
-      text-align: center;
-      padding: 2rem;
-      background: #fef2f2;
-      color: #dc2626;
-      border-radius: 1rem;
-    }
+      .rw-result-delay {
+        font-size: 0.875rem;
+        opacity: 0.9;
+      }
 
-    .rw-loading {
-      text-align: center;
-      padding: 2rem;
-    }
+      .rw-assurance {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.75rem;
+        color: var(--rw-gray-400);
+      }
 
-    @media (max-width: 640px) {
-      .rw-content { padding: 1.5rem; }
-      .rw-question { font-size: 1.375rem; }
-    }
-  `;
-  
-  const style = document.createElement('style');
-  style.textContent = css;
-  document.head.appendChild(style);
-}
-  
+      .rw-error {
+        text-align: center;
+        padding: 2rem;
+        background: #fef2f2;
+        color: #dc2626;
+        border-radius: var(--rw-radius-lg);
+      }
 
+      .rw-loading {
+        text-align: center;
+        padding: 2rem;
+        color: var(--rw-gray-600);
+      }
+
+      .rw-recap {
+        background: var(--rw-gray-100);
+        border-radius: var(--rw-radius-lg);
+        padding: 1rem;
+        margin: 1rem 0;
+        font-size: 0.875rem;
+      }
+
+      .rw-recap-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--rw-gray-200);
+      }
+
+      .rw-recap-item:last-child {
+        border-bottom: none;
+      }
+
+      .rw-form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .rw-form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        color: var(--rw-gray-700);
+      }
+
+      @media (max-width: 640px) {
+        .rw-content { padding: 1.25rem; }
+        .rw-question { font-size: 1.25rem; }
+        .rw-progress-container { padding: 1rem 1.25rem 0.25rem; }
+        .rw-result-price { font-size: 1.5rem; }
+        .rw-option-card { padding: 0.75rem 1rem; }
+      }
+    `;
+    
+    const style = document.createElement('style');
+    style.id = 'rw-widget-styles';
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  // ============================================================
+  // FONCTIONS PRINCIPALES
+  // ============================================================
   async function init() {
+    injectCSS();
     const isValid = await loadConfig();
     if (!isValid) {
       showError('Licence invalide ou domaine non autorisé');
@@ -418,7 +502,7 @@ function injectCSS() {
     }
     
     const remaining = total - step - 1;
-    let assuranceMsg = remaining <= 2 ? '✨ Plus que quelques étapes pour votre estimation' : '🔒 Données confidentielles · Sans engagement';
+    let assuranceMsg = remaining <= 2 ? 'Plus que quelques étapes pour votre estimation' : 'Données confidentielles · Sans engagement';
     
     html += `
         </div>
@@ -522,7 +606,7 @@ function injectCSS() {
           <button class="rw-btn rw-btn-prev" id="rw-prev">Retour</button>
           <button class="rw-btn rw-btn-next" id="rw-next">Voir mon estimation</button>
         </div>
-        <div class="rw-assurance">🔒 Dernière étape avant votre estimation</div>
+        <div class="rw-assurance">Dernière étape avant votre estimation</div>
       </div>
     `;
     
@@ -548,7 +632,7 @@ function injectCSS() {
           <div class="rw-result-card">
             <div class="rw-result-label">Estimation prévisionnelle</div>
             <div class="rw-result-price">${quoteResult.lowEstimate.toLocaleString()}€ – ${quoteResult.highEstimate.toLocaleString()}€</div>
-            <div class="rw-result-delay">⏱ Durée estimée : ${quoteResult.daysEstimate.min} à ${quoteResult.daysEstimate.max} jours</div>
+            <div class="rw-result-delay">Durée estimée : ${quoteResult.daysEstimate.min} à ${quoteResult.daysEstimate.max} jours</div>
           </div>
           <div class="rw-navigation">
             <button class="rw-btn rw-btn-prev" id="rw-prev">Modifier</button>
@@ -617,7 +701,7 @@ function injectCSS() {
 
   async function calculateQuote() {
     const container = document.getElementById('roof-widget');
-    container.innerHTML = '<div class="rw-loading">⏳ Calcul en cours...</div>';
+    container.innerHTML = '<div class="rw-loading">Calcul en cours...</div>';
     
     try {
       const response = await fetch(`${API_BASE}/api/calculate`, {
@@ -698,6 +782,9 @@ function injectCSS() {
     }
   }
 
+  // ============================================================
+  // DÉMARRAGE
+  // ============================================================
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
