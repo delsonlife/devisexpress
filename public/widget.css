@@ -380,4 +380,15 @@
   .rw-progress-container {
     padding: 1.25rem 1.5rem 0.25rem;
   }
+    .rw-option-icon-svg {
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+  opacity: 0.8;
+}
+
+.rw-option-card--selected .rw-option-icon-svg {
+  opacity: 1;
+  filter: brightness(0) saturate(100%) invert(45%) sepia(93%) saturate(1355%) hue-rotate(1deg) brightness(105%) contrast(104%);
+  }
 }
