@@ -433,7 +433,7 @@
     if (currentStep < questions.length) {
       renderQuestion(container, questions[currentStep], currentStep, questions.length);
     } else if (currentStep === questions.length) {
-      renderDelay(container);
+      calculateQuote();  // Passage direct au calcul après la dernière question
     } else if (currentStep === questions.length + 1 && quoteResult) {
       renderResult(container);
     } else if (currentStep === questions.length + 2) {
@@ -544,7 +544,6 @@
           answers[question.id] = value;
           document.querySelectorAll('.rw-option-card').forEach(c => c.classList.remove('rw-option-card--selected'));
           card.classList.add('rw-option-card--selected');
-          // PAS de auto-next - l'utilisateur doit cliquer sur Continuer
         });
       });
     }
@@ -577,82 +576,15 @@
       volume: 'volume',
       distance: 'distance',
       floor: 'floor',
-      windowCount: 'window',
-      delay: 'calendar'
+      windowCount: 'window'
     };
-    
-    if (option === 'urgent' || option === 'Urgent (moins d\'une semaine)') {
-      return `<img src="${API_BASE}/icons/urgent.svg" alt="" class="rw-option-icon-svg">`;
-    }
-    
-    if (questionId === 'delay') {
-      return `<img src="${API_BASE}/icons/calendar.svg" alt="" class="rw-option-icon-svg">`;
-    }
     
     const iconName = iconMap[questionId] || 'check';
     return `<img src="${API_BASE}/icons/${iconName}.svg" alt="" class="rw-option-icon-svg">`;
   }
 
 // ============================================================
-// SECTION 8 : ÉCRAN DÉLAI
-// ============================================================
-  function renderDelay(container) {
-    const delayOptions = [
-      { value: 'urgent', label: 'Urgent (moins d\'une semaine)' },
-      { value: 'moins_3', label: 'Moins de 3 mois' },
-      { value: 'moins_6', label: 'Moins de 6 mois' },
-      { value: 'plus_6', label: 'Plus de 6 mois' }
-    ];
-    
-    let html = `
-      <div class="rw-progress-container">
-        <div class="rw-progress-label"><span>Délai souhaité</span><span>100%</span></div>
-        <div class="rw-progress-bar"><div class="rw-progress-fill" style="width: 100%;"></div></div>
-      </div>
-      <div class="rw-content">
-        <div class="rw-step">
-          <h2 class="rw-question">Quel est votre délai ?</h2>
-          <div class="rw-options-grid">
-    `;
-    
-    delayOptions.forEach(opt => {
-      html += `
-        <div class="rw-option-card" data-value="${opt.value}">
-          <div class="rw-option-icon">${getIconForOption('delay', opt.value)}</div>
-          <div class="rw-option-content">
-            <div class="rw-option-title">${opt.label}</div>
-          </div>
-        </div>
-      `;
-    });
-    
-    html += `
-          </div>
-        </div>
-        <div class="rw-navigation">
-          <button class="rw-btn rw-btn-prev" id="rw-prev">Retour</button>
-          <button class="rw-btn rw-btn-next" id="rw-next">Voir mon estimation</button>
-        </div>
-        <div class="rw-assurance">Dernière étape avant votre estimation</div>
-      </div>
-    `;
-    
-    container.innerHTML = html;
-    
-    document.querySelectorAll('.rw-option-card').forEach(card => {
-      card.addEventListener('click', () => {
-        answers.delay = card.dataset.value;
-        document.querySelectorAll('.rw-option-card').forEach(c => c.classList.remove('rw-option-card--selected'));
-        card.classList.add('rw-option-card--selected');
-        setTimeout(() => calculateQuote(), 300);
-      });
-    });
-    
-    document.getElementById('rw-prev').addEventListener('click', prevStep);
-  }
-
-// ============================================================
-// SECTION 9 : ÉCRAN RÉSULTAT
+// SECTION 8 : ÉCRAN RÉSULTAT
 // ============================================================
   function renderResult(container) {
     const html = `
@@ -680,7 +612,7 @@
   }
 
 // ============================================================
-// SECTION 10 : RÉCAPITULATIF + FORMULAIRE LEAD
+// SECTION 9 : RÉCAPITULATIF + FORMULAIRE LEAD
 // ============================================================
   function renderRecap(container) {
     let recapHtml = '<div class="rw-recap">';
@@ -719,7 +651,7 @@
   }
 
 // ============================================================
-// SECTION 11 : ÉCRAN SUCCÈS
+// SECTION 10 : ÉCRAN SUCCÈS
 // ============================================================
   function renderSuccess(container) {
     container.innerHTML = `
@@ -736,11 +668,23 @@
   }
 
 // ============================================================
-// SECTION 12 : CALCUL DEVIS (API calculate)
+// SECTION 11 : CALCUL DEVIS (API calculate)
 // ============================================================
   async function calculateQuote() {
     const container = document.getElementById('roof-widget');
     container.innerHTML = '<div class="rw-loading">Calcul en cours...</div>';
+    
+    // Vérification des champs requis
+    const required = ['surface', 'material', 'postalCode'];
+    const missing = required.filter(r => !answers[r]);
+    
+    if (missing.length > 0) {
+      console.error('Champs manquants:', missing);
+      alert('Veuillez répondre à toutes les questions');
+      currentStep = 0;
+      render();
+      return;
+    }
     
     try {
       const response = await fetch(`${API_BASE}/api/calculate`, {
@@ -756,11 +700,13 @@
       render();
     } catch (error) {
       alert('Erreur lors du calcul: ' + error.message);
+      currentStep = 0;
+      render();
     }
   }
 
 // ============================================================
-// SECTION 13 : ENVOI LEAD (API lead)
+// SECTION 12 : ENVOI LEAD (API lead)
 // ============================================================
   async function submitLead() {
     const name = document.getElementById('lead-name')?.value;
@@ -792,7 +738,7 @@
   }
 
 // ============================================================
-// SECTION 14 : NAVIGATION (nextStep, prevStep)
+// SECTION 13 : NAVIGATION (nextStep, prevStep)
 // ============================================================
   function nextStep() {
     if (currentStep < config.questions.length) {
@@ -816,9 +762,6 @@
       
       currentStep++;
       render();
-    } else if (currentStep === config.questions.length) {
-      currentStep++;
-      render();
     }
   }
 
@@ -830,7 +773,7 @@
   }
 
 // ============================================================
-// SECTION 15 : DÉMARRAGE
+// SECTION 14 : DÉMARRAGE
 // ============================================================
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
