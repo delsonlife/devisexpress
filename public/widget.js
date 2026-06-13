@@ -1,17 +1,49 @@
 (function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const LICENSE_KEY = urlParams.get('license');
+  // Récupération robuste de la licence
+  let LICENSE_KEY = null;
+  
+  // Méthode 1 : depuis l'URL du script
+  try {
+    const scriptTag = document.currentScript;
+    if (scriptTag && scriptTag.src) {
+      const url = new URL(scriptTag.src);
+      LICENSE_KEY = url.searchParams.get('license');
+    }
+  } catch(e) {}
+  
+  // Méthode 2 : chercher dans tous les scripts
+  if (!LICENSE_KEY) {
+    const scripts = document.querySelectorAll('script[src*="widget.js"]');
+    for (const script of scripts) {
+      if (script.src) {
+        const match = script.src.match(/[?&]license=([^&]+)/);
+        if (match) {
+          LICENSE_KEY = match[1];
+          break;
+        }
+      }
+    }
+  }
+  
+  // Méthode 3 : depuis l'URL de la page
+  if (!LICENSE_KEY) {
+    const urlParams = new URLSearchParams(window.location.search);
+    LICENSE_KEY = urlParams.get('license');
+  }
+  
+  // Méthode 4 : valeur par défaut
+  if (!LICENSE_KEY) {
+    LICENSE_KEY = 'COUVREUR_ABC123';
+    console.warn('[Widget] Licence par défaut utilisée');
+  }
+  
+  console.log('[Widget] Licence détectée :', LICENSE_KEY);
   
   const API_BASE = 'https://devisexpress-two.vercel.app';
   let currentStep = 0;
   let answers = {};
   let config = null;
   let quoteResult = null;
-
-  if (!LICENSE_KEY) {
-    console.error('[Widget] License key required');
-    return;
-  }
 
   async function init() {
     const isValid = await loadConfig();
@@ -34,7 +66,6 @@
       
       config = await response.json();
       
-      // Appliquer le branding
       if (config.branding?.primaryColor) {
         document.documentElement.style.setProperty('--rw-primary', config.branding.primaryColor);
       }
@@ -111,7 +142,6 @@
           <h2 class="rw-question">${question.label}</h2>
     `;
     
-    // Rendu selon le type de question
     switch(question.type) {
       case 'slider':
         const value = answers[question.id] || question.min || 50;
@@ -155,14 +185,8 @@
         break;
     }
     
-    // Message d'assurance
     const remaining = total - step - 1;
-    let assuranceMsg = '';
-    if (remaining <= 2) {
-      assuranceMsg = '✨ Plus que quelques étapes pour votre estimation';
-    } else {
-      assuranceMsg = '🔒 Données confidentielles · Sans engagement';
-    }
+    let assuranceMsg = remaining <= 2 ? '✨ Plus que quelques étapes pour votre estimation' : '🔒 Données confidentielles · Sans engagement';
     
     html += `
         </div>
@@ -176,7 +200,6 @@
     
     container.innerHTML = html;
     
-    // Attacher les événements
     if (question.type === 'slider') {
       const slider = document.getElementById(`input-${question.id}`);
       const display = document.getElementById(`slider-value-${question.id}`);
@@ -207,7 +230,6 @@
   }
 
   function getIconForOption(questionId, option) {
-    // Mapping des icônes par type de question
     const iconMap = {
       surface: 'surface',
       material: 'material',
@@ -219,12 +241,10 @@
       delay: 'calendar'
     };
     
-    // Mapping spécial pour les options "urgent"
     if (option === 'urgent' || option === 'Urgent (moins d\'une semaine)') {
       return `<img src="${API_BASE}/icons/urgent.svg" alt="" class="rw-option-icon-svg">`;
     }
     
-    // Mapping pour les options de délai
     if (questionId === 'delay') {
       return `<img src="${API_BASE}/icons/calendar.svg" alt="" class="rw-option-icon-svg">`;
     }
@@ -380,7 +400,7 @@
       currentStep = config.questions.length + 1;
       render();
     } catch (error) {
-      alert('Erreur lors du calcul');
+      alert('Erreur lors du calcul: ' + error.message);
     }
   }
 
