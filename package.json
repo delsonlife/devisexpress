@@ -1,1 +1,16 @@
-
+{
+  "name": "roof-widget",
+  "version": "2.0.0",
+  "description": "Widget de devis multi-métiers pour artisans",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "start": "vercel dev"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.x"
+  }
+}
