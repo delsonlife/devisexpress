@@ -102,3 +102,53 @@
     }
   }
 }
+
+"COUVREUR_ABC123": {
+  "active": true,
+  "company": {
+    "name": "Couverture Paris Pro",
+    "domain": "devis-couvreur1.vercel.app",
+    "email": "contact@couvreur-paris.fr"
+  },
+  "allowedOrigins": ["https://devis-couvreur1.vercel.app"],
+  "branding": {
+    "primaryColor": "#ff6b00"
+  },
+  "trade": "roofing",
+  "calculator": "roof_v1",
+  "questions": [
+    {
+      "id": "surface",
+      "type": "slider",
+      "label": "Surface de la toiture",
+      "min": 20,
+      "max": 500,
+      "unit": "m²",
+      "required": true
+    },
+    {
+      "id": "material",
+      "type": "select",
+      "label": "Type de couverture",
+      "options": ["Tuile", "Ardoise", "Zinc", "Bac acier"],
+      "required": true
+    },
+    {
+      "id": "postalCode",
+      "type": "text",
+      "label": "Code postal",
+      "placeholder": "75001",
+      "required": true
+    }
+  ],
+  "pricing": {
+    "materials": {
+      "tuile": 95,
+      "ardoise": 145,
+      "zinc": 180,
+      "bac_acier": 110
+    },
+    "margin_low": 0.92,
+    "margin_high": 1.18
+  }
+}
