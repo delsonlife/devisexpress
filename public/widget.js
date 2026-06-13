@@ -2,7 +2,7 @@
   const urlParams = new URLSearchParams(window.location.search);
   const LICENSE_KEY = urlParams.get('license');
   
-  const API_BASE = 'https://roof-widget.vercel.app';
+  const API_BASE = 'https://devisexpress-two.vercel.app/';
   let currentStep = 0;
   let answers = {};
   let config = null;
