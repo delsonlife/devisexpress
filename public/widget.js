@@ -207,11 +207,30 @@
   }
 
   function getIconForOption(questionId, option) {
-    // Retourne une icône SVG simple
-    return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
-      <path d="M12 8v4l3 3" stroke="currentColor"/>
-    </svg>`;
+    // Mapping des icônes par type de question
+    const iconMap = {
+      surface: 'surface',
+      material: 'material',
+      postalCode: 'postal',
+      volume: 'volume',
+      distance: 'distance',
+      floor: 'floor',
+      windowCount: 'window',
+      delay: 'calendar'
+    };
+    
+    // Mapping spécial pour les options "urgent"
+    if (option === 'urgent' || option === 'Urgent (moins d\'une semaine)') {
+      return `<img src="${API_BASE}/icons/urgent.svg" alt="" class="rw-option-icon-svg">`;
+    }
+    
+    // Mapping pour les options de délai
+    if (questionId === 'delay') {
+      return `<img src="${API_BASE}/icons/calendar.svg" alt="" class="rw-option-icon-svg">`;
+    }
+    
+    const iconName = iconMap[questionId] || 'check';
+    return `<img src="${API_BASE}/icons/${iconName}.svg" alt="" class="rw-option-icon-svg">`;
   }
 
   function renderDelay(container) {
@@ -236,7 +255,10 @@
     delayOptions.forEach(opt => {
       html += `
         <div class="rw-option-card" data-value="${opt.value}">
-          <div class="rw-option-content"><div class="rw-option-title">${opt.label}</div></div>
+          <div class="rw-option-icon">${getIconForOption('delay', opt.value)}</div>
+          <div class="rw-option-content">
+            <div class="rw-option-title">${opt.label}</div>
+          </div>
         </div>
       `;
     });
@@ -412,7 +434,6 @@
       currentStep++;
       render();
     } else if (currentStep === config.questions.length) {
-      // Déjà sur la page délai
       currentStep++;
       render();
     }
