@@ -45,6 +45,238 @@
   let config = null;
   let quoteResult = null;
 
+
+function injectCSS() {
+  const css = `
+    :root {
+      --rw-primary: #ff6b00;
+      --rw-primary-dark: #e05a00;
+      --rw-gray-100: #f3f4f6;
+      --rw-gray-200: #e5e7eb;
+      --rw-gray-600: #4b5563;
+      --rw-gray-900: #111827;
+      --rw-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --rw-radius-xl: 1.5rem;
+    }
+
+    .rw-widget {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: white;
+      border-radius: var(--rw-radius-xl);
+      box-shadow: var(--rw-shadow-lg);
+      overflow: hidden;
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .rw-progress-container {
+      padding: 1.75rem 2rem 0.5rem;
+    }
+
+    .rw-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+      color: var(--rw-gray-600);
+      margin-bottom: 0.625rem;
+    }
+
+    .rw-progress-bar {
+      height: 0.3125rem;
+      background: var(--rw-gray-200);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .rw-progress-fill {
+      height: 100%;
+      background: var(--rw-primary);
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+
+    .rw-content {
+      padding: 2rem;
+    }
+
+    .rw-question {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--rw-gray-900);
+      margin-bottom: 1.5rem;
+    }
+
+    .rw-options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .rw-option-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: white;
+      border: 1px solid var(--rw-gray-200);
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .rw-option-card:hover {
+      border-color: var(--rw-primary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .rw-option-card--selected {
+      border-color: var(--rw-primary);
+      background: #fff7ed;
+    }
+
+    .rw-option-icon-svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .rw-option-title {
+      font-weight: 500;
+      color: var(--rw-gray-900);
+    }
+
+    .rw-slider-container {
+      margin-top: 1.5rem;
+    }
+
+    .rw-slider-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .rw-slider-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--rw-primary);
+    }
+
+    .rw-slider {
+      width: 100%;
+      height: 0.3125rem;
+      -webkit-appearance: none;
+      background: var(--rw-gray-200);
+      border-radius: 9999px;
+    }
+
+    .rw-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 1.125rem;
+      height: 1.125rem;
+      background: var(--rw-primary);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .rw-input {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--rw-gray-200);
+      border-radius: 0.75rem;
+      font-size: 1rem;
+    }
+
+    .rw-input:focus {
+      outline: none;
+      border-color: var(--rw-primary);
+    }
+
+    .rw-navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--rw-gray-200);
+    }
+
+    .rw-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-size: 0.875rem;
+    }
+
+    .rw-btn-prev {
+      background: transparent;
+      color: var(--rw-gray-600);
+    }
+
+    .rw-btn-prev:hover:not(:disabled) {
+      background: var(--rw-gray-100);
+    }
+
+    .rw-btn-prev:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .rw-btn-next, .rw-btn-submit {
+      background: var(--rw-primary);
+      color: white;
+    }
+
+    .rw-btn-next:hover, .rw-btn-submit:hover {
+      background: var(--rw-primary-dark);
+    }
+
+    .rw-result-card {
+      background: linear-gradient(135deg, var(--rw-primary) 0%, var(--rw-primary-dark) 100%);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      text-align: center;
+      color: white;
+    }
+
+    .rw-result-price {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .rw-assurance {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--rw-gray-600);
+    }
+
+    .rw-error {
+      text-align: center;
+      padding: 2rem;
+      background: #fef2f2;
+      color: #dc2626;
+      border-radius: 1rem;
+    }
+
+    .rw-loading {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    @media (max-width: 640px) {
+      .rw-content { padding: 1.5rem; }
+      .rw-question { font-size: 1.375rem; }
+    }
+  `;
+  
+  const style = document.createElement('style');
+  style.textContent = css;
+  document.head.appendChild(style);
+}
+  
+
   async function init() {
     const isValid = await loadConfig();
     if (!isValid) {
