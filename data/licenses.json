@@ -177,14 +177,15 @@
       "margin_high": 1.18
     }
   },
+ {
   "MOVING001": {
     "active": true,
     "company": {
-      "name": "Déménagement Lyon Express",
+      "name": "TransitPro",
       "domain": "devis-couvreur1.vercel.app",
-      "email": "contact@demenagement-lyon.fr"
+      "email": "contact@transitpro.fr"
     },
-    "allowedOrigins": ["https://devis-couvreur1.vercel.app"],
+    "allowedOrigins":  ["https://devis-couvreur1.vercel.app"],
     "branding": {
       "primaryColor": "#1e30d4"
     },
@@ -193,54 +194,149 @@
     "questions": [
       {
         "id": "departureAddress",
-        "type": "text",
+        "type": "address",
         "label": "Adresse de départ",
-        "placeholder": "15 rue Victor Hugo, 69001 Lyon",
+        "placeholder": "Ex: 12 Rue de la Paix, Paris",
+        "icon": "departure",
         "required": true
       },
       {
         "id": "arrivalAddress",
-        "type": "text",
+        "type": "address",
         "label": "Adresse d'arrivée",
-        "placeholder": "8 avenue des Champs-Élysées, 75008 Paris",
+        "placeholder": "Ex: 8 Avenue Victor Hugo, Lyon",
+        "icon": "arrival",
         "required": true
       },
       {
-        "id": "volume",
-        "type": "slider",
-        "label": "Volume estimé (m³)",
-        "min": 10,
-        "max": 200,
-        "step": 5,
-        "unit": "m³",
+        "id": "items",
+        "type": "multiselect",
+        "label": "Que transportez-vous ?",
+        "icon": "items",
+        "options": [
+          "Canapé",
+          "Lit double",
+          "Armoire",
+          "Table",
+          "Réfrigérateur",
+          "Lave-linge",
+          "Bureau",
+          "Carton"
+        ],
+        "volumes": {
+          "Canapé": 3.0,
+          "Lit double": 2.0,
+          "Armoire": 2.5,
+          "Table": 1.0,
+          "Réfrigérateur": 0.8,
+          "Lave-linge": 0.6,
+          "Bureau": 1.2,
+          "Carton": 0.1
+        },
+        "prices": {
+          "Canapé": 4,
+          "Lit double": 3,
+          "Armoire": 3,
+          "Table": 2,
+          "Réfrigérateur": 2,
+          "Lave-linge": 2,
+          "Bureau": 2,
+          "Carton": 0.5
+        },
+        "hasQuantity": true,
+        "required": false
+      },
+      {
+        "id": "accessType",
+        "type": "select",
+        "label": "Type d'accès",
+        "icon": "access",
+        "options": [
+          "Trottoir à trottoir",
+          "Montée en étage"
+        ],
         "required": true
       },
       {
-        "id": "floor",
-        "type": "number",
-        "label": "Nombre d'étages (sans ascenseur)",
+        "id": "floorDepart",
+        "type": "floor",
+        "label": "Étage de départ",
+        "icon": "floor",
+        "hasElevator": true,
         "min": 0,
         "max": 10,
+        "required": false,
+        "dependsOn": { "accessType": "Montée en étage" }
+      },
+      {
+        "id": "floorArrival",
+        "type": "floor",
+        "label": "Étage d'arrivée",
+        "icon": "floor",
+        "hasElevator": true,
+        "min": 0,
+        "max": 10,
+        "required": false,
+        "dependsOn": { "accessType": "Montée en étage" }
+      },
+      {
+        "id": "urgent",
+        "type": "checkbox",
+        "label": "Transport urgent",
+        "icon": "urgent",
+        "description": "Majoration +20%",
+        "required": false
+      },
+      {
+        "id": "movers",
+        "type": "select",
+        "label": "Nombre de déménageurs",
+        "icon": "movers",
+        "options": [
+          "1 déménageur",
+          "2 déménageurs",
+          "3 déménageurs"
+        ],
         "required": true
       },
       {
-        "id": "distanceFallback",
+        "id": "date",
+        "type": "date",
+        "label": "Date souhaitée",
+        "icon": "calendar",
+        "required": true
+      },
+      {
+        "id": "time",
         "type": "select",
-        "label": "Distance approximative (si adresse non reconnue)",
-        "options": [
-          "Moins de 50 km",
-          "50 à 200 km",
-          "Plus de 200 km"
-        ],
-        "required": false
+        "label": "Heure",
+        "icon": "clock",
+        "options": ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+        "required": true
+      },
+      {
+        "id": "fullName",
+        "type": "text",
+        "label": "Votre nom",
+        "placeholder": "Jean Dupont",
+        "icon": "user",
+        "required": true
+      },
+      {
+        "id": "phone",
+        "type": "tel",
+        "label": "Téléphone",
+        "placeholder": "06 12 34 56 78",
+        "icon": "phone",
+        "required": true
       }
     ],
     "pricing": {
-      "moving": {
-        "pricePerM3": 38,
-        "floorSurcharge": 15,
-        "pricePerKm": 1
-      },
+      "basePrice": 38,
+      "pricePerKm": 1,
+      "floorSurcharge": 8,
+      "extraMoverPrice": 20,
+      "urgentMultiplier": 1.2,
       "margin_low": 0.92,
       "margin_high": 1.18
     }
