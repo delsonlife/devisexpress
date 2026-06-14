@@ -923,59 +923,7 @@
 // ============================================================
 // SECTION 5 : RENDU PRINCIPAL
 // ============================================================
-  function render() {
-    if (currentQuestionIndex < questions.length) {
-      renderQuestion(container, questions[currentQuestionIndex], currentQuestionIndex, questions.length);
-    } else {
-      renderFinalForm();
-    }
-  }
-
-  function renderQuestion(container, question, index, total) {
-    const progress = ((index + 1) / total) * 100;
-    const isLastQuestion = (index + 1 === total);
-    
-    let html = `
-      <div class="rw-progress-container">
-        <div class="rw-progress-label">
-          <span>Étape ${index + 1} sur ${total}</span>
-          <span>${Math.round(progress)}%</span>
-        </div>
-        <div class="rw-progress-bar">
-          <div class="rw-progress-fill" style="width: ${progress}%;"></div>
-        </div>
-      </div>
-      <div class="rw-wizard-body">
-        <div class="rw-steps-area">
-          <div class="rw-step-panel active">
-            <div class="rw-step-title">${question.label}</div>
-            <div class="rw-step-desc">${question.placeholder || ''}</div>
-    `;
-    
-    switch(question.type) {
-      case 'address':
-        html += `
-          <div class="rw-addr-wrap">
-            <span class="rw-addr-icon">📍</span>
-            <input type="text" id="addr-input-${question.id}" class="rw-addr-input" 
-                   placeholder="${question.placeholder}" autocomplete="off">
-            <div class="rw-addr-suggestions" id="suggest-${question.id}"></div>
-          </div>
-          ${question.id === 'arrivalAddress' ? '<div class="rw-dist-badge" id="dist-badge" style="display:none"><span id="dist-icon">📏</span><span id="dist-text"></span></div>' : ''}
-        `;
-        break;
-        
-      case 'multiselect':
-        html += `
-          <div class="rw-item-grid" id="item-grid"></div>
-          <div class="rw-truck-bar">
-            <div class="rw-truck-label"><span>🚚 Remplissage camion 12m³</span><span id="truck-pct">0%</span></div>
-            <div class="rw-truck-bg"><div class="rw-truck-fill" id="truck-fill"></div></div>
-          </div>
-        `;
-        break;
-        
-      case 'select':
+        case 'select':
         if (question.id === 'accessType') {
           html += `
             <div class="rw-access-grid" id="access-grid">
@@ -991,11 +939,30 @@
               </div>
             </div>
             <div id="floor-section" style="display:none">
-              <div class="rw-floor-card" style="width:100%">
-                <div class="rw-floor-title">Ascenseur ?</div>
-                <div class="rw-asc-row" style="justify-content:flex-start">
-                  <button class="rw-toggle-pill on" data-asc="true" id="asc-oui">Oui</button>
-                  <button class="rw-toggle-pill" data-asc="false" id="asc-non">Non</button>
+              <div class="rw-floor-grid">
+                <div class="rw-floor-card">
+                  <div class="rw-floor-title">Départ — Étage</div>
+                  <div class="rw-floor-counter">
+                    <button class="rw-qty-btn minus" data-side="depart" data-delta="-1">−</button>
+                    <span class="rw-floor-val" id="floor-depart-val">0</span>
+                    <button class="rw-qty-btn plus" data-side="depart" data-delta="1">+</button>
+                  </div>
+                  <div class="rw-asc-row">
+                    <button class="rw-toggle-pill on" data-side="depart" data-asc="true">Ascenseur Oui</button>
+                    <button class="rw-toggle-pill" data-side="depart" data-asc="false">Ascenseur Non</button>
+                  </div>
+                </div>
+                <div class="rw-floor-card">
+                  <div class="rw-floor-title">Arrivée — Étage</div>
+                  <div class="rw-floor-counter">
+                    <button class="rw-qty-btn minus" data-side="arrival" data-delta="-1">−</button>
+                    <span class="rw-floor-val" id="floor-arrival-val">0</span>
+                    <button class="rw-qty-btn plus" data-side="arrival" data-delta="1">+</button>
+                  </div>
+                  <div class="rw-asc-row">
+                    <button class="rw-toggle-pill on" data-side="arrival" data-asc="true">Ascenseur Oui</button>
+                    <button class="rw-toggle-pill" data-side="arrival" data-asc="false">Ascenseur Non</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1028,346 +995,18 @@
           html += `</select>`;
         }
         break;
-        
-      case 'checkbox':
-        if (question.id === 'urgent') {
-          html += `
-            <div class="rw-urgent-box" id="urgent-box">
-              <input type="checkbox" id="urgent-chk" style="width:1rem;height:1rem;accent-color:#f59e0b">
-              <span style="font-size:1.125rem">⚡</span>
-              <div>
-                <div class="rw-urgent-text">Transport urgent (+20%)</div>
-                <div class="rw-urgent-sub">Livraison dans les prochaines heures</div>
-              </div>
-            </div>
-          `;
-        }
-        break;
-        
-      case 'date':
-        const today = new Date().toISOString().split('T')[0];
-        html += `<input type="date" id="input-${question.id}" class="rw-form-input" value="${today}">`;
-        break;
-        
-      case 'text':
-      case 'tel':
-        html += `<input type="${question.type}" id="input-${question.id}" class="rw-form-input" placeholder="">`;
-        break;
-    }
-    
-    const buttonText = isLastQuestion ? 'Obtenir mon devis' : 'Suivant';
-    const buttonClass = isLastQuestion ? 'rw-btn-submit' : 'rw-btn-next';
-    
-    html += `
-            <div class="rw-step-nav">
-              <button class="rw-btn-back" id="rw-prev" ${index === 0 ? 'disabled style="opacity:0.5"' : ''}>← Retour</button>
-              <button class="${buttonClass}" id="rw-next">${buttonText} →</button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="rw-price-panel">
-          <div class="rw-price-label">Prix estimé</div>
-          <div class="rw-price-amount"><span id="price-total">38</span>€</div>
-          <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
-          <div class="rw-price-rows">
-            <div class="rw-price-row"><span>Base</span><span>38€</span></div>
-            <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
-            <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
-            <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Supplément étage</span><span id="price-floor">0€</span></div>
-            <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
-            <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
-          </div>
-          <div class="rw-price-reassure">
-            <div class="rw-price-reassure-item">✅ Prix fixe, aucun frais caché</div>
-            <div class="rw-price-reassure-item">📞 Rappel sous 2 heures</div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    container.innerHTML = html;
-    
-    attachEvents(question);
-    
-    document.getElementById('rw-prev')?.addEventListener('click', prevStep);
-    document.getElementById('rw-next')?.addEventListener('click', () => {
-      if (isLastQuestion) {
-        submitForm();
-      } else {
-        nextStep();
-      }
-    });
-  }
-
-  function renderFinalForm() {
-    const html = `
-      <div class="rw-progress-container">
-        <div class="rw-progress-label">
-          <span>Dernière étape</span>
-          <span>100%</span>
-        </div>
-        <div class="rw-progress-bar">
-          <div class="rw-progress-fill" style="width: 100%;"></div>
-        </div>
-      </div>
-      <div class="rw-wizard-body">
-        <div class="rw-steps-area">
-          <div class="rw-step-panel active">
-            <div class="rw-step-title">Date et coordonnées</div>
-            <div class="rw-step-desc">Planifiez votre déménagement et recevez votre devis.</div>
-            
-            <div class="rw-recap" id="recap-box">
-              <div class="rw-recap-title">Récapitulatif</div>
-              <div class="rw-recap-pills" id="recap-pills"></div>
-            </div>
-            
-            <div class="rw-form-grid">
-              <div class="rw-form-row">
-                <label class="rw-form-label">📅 Date souhaitée</label>
-                <input id="input-date" type="date" class="rw-form-input">
-              </div>
-              <div class="rw-form-row">
-                <label class="rw-form-label">🕐 Heure</label>
-                <select id="input-time" class="rw-form-input">
-                  <option>08:00</option><option>09:00</option><option>10:00</option>
-                  <option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="rw-form-row">
-              <label class="rw-form-label">👤 Votre nom</label>
-              <input id="input-fullName" type="text" class="rw-form-input" placeholder="Jean Dupont">
-            </div>
-            <div class="rw-form-row">
-              <label class="rw-form-label">📱 Téléphone</label>
-              <input id="input-phone" type="tel" class="rw-form-input" placeholder="">
-            </div>
-            
-            <div class="rw-step-nav">
-              <button class="rw-btn-back" id="rw-prev-final">← Retour</button>
-              <button class="rw-btn-submit" id="rw-submit-final">Envoyer ma demande →</button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="rw-price-panel">
-          <div class="rw-price-label">Prix estimé</div>
-          <div class="rw-price-amount"><span id="price-total-final">38</span>€</div>
-          <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
-          <div class="rw-price-rows">
-            <div class="rw-price-row"><span>Base</span><span>38€</span></div>
-            <div class="rw-price-row" id="price-row-dist-final"><span>Distance</span><span id="price-dist-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-items-final"><span>Objets</span><span id="price-items-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-floor-final" style="display:none"><span>Supplément étage</span><span id="price-floor-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-movers-final" style="display:none"><span>Déménageurs</span><span id="price-movers-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-urgent-final" style="display:none"><span>Urgent +20%</span><span id="price-urgent-final">0€</span></div>
-          </div>
-          <div class="rw-price-reassure">
-            <div class="rw-price-reassure-item">✅ Prix fixe, aucun frais caché</div>
-            <div class="rw-price-reassure-item">📞 Rappel sous 2 heures</div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    container.innerHTML = html;
-    
-    const today = new Date();
-    today.setDate(today.getDate() + 7);
-    const dateInput = document.getElementById('input-date');
-    if (dateInput) dateInput.value = today.toISOString().split('T')[0];
-    
-    updateRecapAndPrice();
-    
-    document.getElementById('rw-prev-final')?.addEventListener('click', () => {
-      currentQuestionIndex = questions.length - 1;
-      render();
-    });
-    
-    document.getElementById('rw-submit-final')?.addEventListener('click', () => {
-      const name = document.getElementById('input-fullName')?.value;
-      const phone = document.getElementById('input-phone')?.value;
-      const date = document.getElementById('input-date')?.value;
-      const time = document.getElementById('input-time')?.value;
-      
-      if (!name || !phone) {
-        alert('Veuillez renseigner votre nom et téléphone');
-        return;
-      }
-      
-      answers.fullName = name;
-      answers.phone = phone;
-      answers.date = date;
-      answers.time = time;
-      answers.distanceKm = distanceKm;
-      answers.items = Object.keys(itemQuantities).filter(id => itemQuantities[id] > 0);
-      answers.itemQuantities = { ...itemQuantities };
-      
-      calculateQuote();
-    });
-  }
-
-  function updateRecapAndPrice() {
-    const recapPills = document.getElementById('recap-pills');
-    if (recapPills) {
-      const pills = [];
-      if (answers.departureAddress) pills.push(`📍 ${answers.departureAddress.split(',')[0]}`);
-      if (answers.arrivalAddress) pills.push(`🏠 ${answers.arrivalAddress.split(',')[0]}`);
-      if (distanceKm) pills.push(`📏 ${distanceKm} km`);
-      const itemCount = Object.values(itemQuantities).reduce((s, q) => s + q, 0);
-      if (itemCount > 0) pills.push(`📦 ${itemCount} objet(s)`);
-      recapPills.innerHTML = pills.map(p => `<span class="rw-recap-pill">${p}</span>`).join('');
-    }
-    updatePriceFinal();
-  }
-
-  function updatePriceFinal() {
-    let total = 38;
-    
-    const distPrice = distanceKm;
-    total += distPrice;
-    const priceDist = document.getElementById('price-dist-final');
-    if (priceDist) priceDist.textContent = `${distPrice}€`;
-    
-    let itemsPrice = 0;
-    for (const item of itemsList) {
-      itemsPrice += (itemQuantities[item.id] || 0) * item.price;
-    }
-    total += itemsPrice;
-    const priceItems = document.getElementById('price-items-final');
-    if (priceItems) priceItems.textContent = `${itemsPrice}€`;
-    
-    let floorPrice = 0;
-    if (answers.accessType === 'Montée en étage' && answers.hasElevator === false) {
-      floorPrice = 30;
-    }
-    total += floorPrice;
-    const rowFloor = document.getElementById('price-row-floor-final');
-    const priceFloor = document.getElementById('price-floor-final');
-    if (floorPrice > 0) {
-      rowFloor.style.display = '';
-      priceFloor.textContent = `${floorPrice}€`;
-    } else {
-      rowFloor.style.display = 'none';
-    }
-    
-    let moversPrice = 0;
-    if (answers.movers === '2 déménageurs') moversPrice = 20;
-    if (answers.movers === '3 déménageurs') moversPrice = 40;
-    total += moversPrice;
-    const rowMovers = document.getElementById('price-row-movers-final');
-    const priceMovers = document.getElementById('price-movers-final');
-    if (moversPrice > 0) {
-      rowMovers.style.display = '';
-      priceMovers.textContent = `${moversPrice}€`;
-    } else {
-      rowMovers.style.display = 'none';
-    }
-    
-    let urgentPrice = 0;
-    if (answers.urgent) {
-      urgentPrice = Math.round(total * 0.2);
-      total = total * 1.2;
-    }
-    const rowUrgent = document.getElementById('price-row-urgent-final');
-    const priceUrgent = document.getElementById('price-urgent-final');
-    if (urgentPrice > 0) {
-      rowUrgent.style.display = '';
-      priceUrgent.textContent = `${urgentPrice}€`;
-    } else {
-      rowUrgent.style.display = 'none';
-    }
-    
-    const totalEl = document.getElementById('price-total-final');
-    if (totalEl) totalEl.textContent = Math.round(total);
-  }
   // ============================================================
 // SECTION 6 : ÉVÉNEMENTS PAR TYPE DE QUESTION
 // ============================================================
-  let addressTimers = {};
-  let suggestionsData = {};
-
-  function attachEvents(question) {
-    if (question.type === 'address') {
-      const input = document.getElementById(`addr-input-${question.id}`);
-      const suggestBox = document.getElementById(`suggest-${question.id}`);
-      
-      input.addEventListener('input', () => {
-        const query = input.value.trim();
-        if (query.length < 3) {
-          suggestBox.classList.remove('open');
-          return;
-        }
-        
-        clearTimeout(addressTimers[question.id]);
-        addressTimers[question.id] = setTimeout(() => {
-          fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`)
-            .then(r => r.json())
-            .then(data => {
-              if (!data.features?.length) {
-                suggestBox.classList.remove('open');
-                return;
-              }
-              
-              suggestionsData[question.id] = data.features.map(f => ({
-                label: f.properties.label,
-                context: f.properties.context,
-                lat: f.geometry.coordinates[1],
-                lon: f.geometry.coordinates[0]
-              }));
-              
-              suggestBox.innerHTML = suggestionsData[question.id].map((item, idx) => `
-                <div class="rw-addr-sugg-item" data-idx="${idx}">
-                  <span>📍</span>
-                  <div>
-                    <div style="font-weight:600">${item.label}</div>
-                    <div style="font-size:0.75rem;color:#94a3b8">${item.context}</div>
-                  </div>
-                </div>
-              `).join('');
-              
-              suggestBox.classList.add('open');
-              
-              document.querySelectorAll(`#suggest-${question.id} .rw-addr-sugg-item`).forEach(el => {
-                el.addEventListener('click', () => {
-                  const idx = parseInt(el.dataset.idx);
-                  const selected = suggestionsData[question.id][idx];
-                  input.value = selected.label;
-                  suggestBox.classList.remove('open');
-                  
-                  addressCoords[question.id] = { lat: selected.lat, lon: selected.lon };
-                  answers[question.id] = selected.label;
-                  
-                  if (addressCoords.departureAddress && addressCoords.arrivalAddress) {
-                    calculateDistance();
-                  }
-                  updatePrice();
-                });
-              });
-            });
-        }, 300);
-      });
-      
-      document.addEventListener('click', (e) => {
-        if (suggestBox && !suggestBox.contains(e.target) && e.target !== input) {
-          suggestBox.classList.remove('open');
-        }
-      });
-    }
-    
-    if (question.type === 'multiselect') {
-      renderItemsGrid();
-    }
-    
-    if (question.id === 'accessType') {
+     if (question.id === 'accessType') {
       if (!answers.accessType) {
         answers.accessType = 'Trottoir à trottoir';
       }
-      if (answers.hasElevator === undefined) {
-        answers.hasElevator = true;
-      }
+      // Initialiser les étages
+      if (answers.floorDepart === undefined) answers.floorDepart = 0;
+      if (answers.floorArrival === undefined) answers.floorArrival = 0;
+      if (answers.elevatorDepart === undefined) answers.elevatorDepart = true;
+      if (answers.elevatorArrival === undefined) answers.elevatorArrival = true;
       
       document.querySelectorAll('.rw-access-card').forEach(card => {
         const cardValue = card.dataset.value;
@@ -1384,14 +1023,28 @@
           const floorSection = document.getElementById('floor-section');
           if (value === 'Montée en étage') {
             floorSection.style.display = 'block';
-            const ascOui = document.getElementById('asc-oui');
-            const ascNon = document.getElementById('asc-non');
-            if (answers.hasElevator) {
-              ascOui.classList.add('on');
-              ascNon.classList.remove('on');
+            // Mettre à jour l'affichage des étages
+            document.getElementById('floor-depart-val').textContent = answers.floorDepart;
+            document.getElementById('floor-arrival-val').textContent = answers.floorArrival;
+            // Mettre à jour les boutons ascenseur
+            const departAscOui = document.querySelector('#floor-section .rw-floor-card:first-child .rw-toggle-pill[data-asc="true"]');
+            const departAscNon = document.querySelector('#floor-section .rw-floor-card:first-child .rw-toggle-pill[data-asc="false"]');
+            const arrivalAscOui = document.querySelector('#floor-section .rw-floor-card:last-child .rw-toggle-pill[data-asc="true"]');
+            const arrivalAscNon = document.querySelector('#floor-section .rw-floor-card:last-child .rw-toggle-pill[data-asc="false"]');
+            
+            if (answers.elevatorDepart) {
+              departAscOui.classList.add('on');
+              departAscNon.classList.remove('on');
             } else {
-              ascOui.classList.remove('on');
-              ascNon.classList.add('on');
+              departAscOui.classList.remove('on');
+              departAscNon.classList.add('on');
+            }
+            if (answers.elevatorArrival) {
+              arrivalAscOui.classList.add('on');
+              arrivalAscNon.classList.remove('on');
+            } else {
+              arrivalAscOui.classList.remove('on');
+              arrivalAscNon.classList.add('on');
             }
           } else {
             floorSection.style.display = 'none';
@@ -1405,84 +1058,55 @@
         floorSectionEl.style.display = 'block';
       }
       
-      const ascOui = document.getElementById('asc-oui');
-      const ascNon = document.getElementById('asc-non');
-      
-      if (ascOui) {
-        ascOui.addEventListener('click', () => {
-          answers.hasElevator = true;
-          ascOui.classList.add('on');
-          ascNon.classList.remove('on');
+      // Gestion des boutons + / - pour étages
+      document.querySelectorAll('.rw-qty-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const side = btn.dataset.side;
+          const delta = parseInt(btn.dataset.delta);
+          if (side === 'depart') {
+            const newVal = Math.max(0, answers.floorDepart + delta);
+            answers.floorDepart = newVal;
+            document.getElementById('floor-depart-val').textContent = newVal;
+          } else {
+            const newVal = Math.max(0, answers.floorArrival + delta);
+            answers.floorArrival = newVal;
+            document.getElementById('floor-arrival-val').textContent = newVal;
+          }
           updatePrice();
         });
-      }
-      if (ascNon) {
-        ascNon.addEventListener('click', () => {
-          answers.hasElevator = false;
-          ascNon.classList.add('on');
-          ascOui.classList.remove('on');
-          updatePrice();
-        });
-      }
-    }
-    
-    if (question.id === 'movers') {
-      if (!answers.movers) {
-        answers.movers = '1 déménageur';
-      }
+      });
       
-      document.querySelectorAll('.rw-mover-card').forEach(card => {
-        const cardValue = card.dataset.value;
-        if (cardValue === answers.movers) {
-          card.classList.add('selected');
+      // Gestion des boutons ascenseur
+      document.querySelectorAll('.rw-toggle-pill').forEach(pill => {
+        const side = pill.dataset.side;
+        const asc = pill.dataset.asc === 'true';
+        
+        if (side === 'depart' && answers.elevatorDepart === asc) {
+          pill.classList.add('on');
+        }
+        if (side === 'arrival' && answers.elevatorArrival === asc) {
+          pill.classList.add('on');
         }
         
-        card.addEventListener('click', () => {
-          const value = card.dataset.value;
-          answers.movers = value;
-          document.querySelectorAll('.rw-mover-card').forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
+        pill.addEventListener('click', () => {
+          const sidePill = pill.dataset.side;
+          const ascValue = pill.dataset.asc === 'true';
+          if (sidePill === 'depart') {
+            answers.elevatorDepart = ascValue;
+            const container = pill.parentElement;
+            container.querySelectorAll('.rw-toggle-pill').forEach(p => p.classList.remove('on'));
+            pill.classList.add('on');
+          } else {
+            answers.elevatorArrival = ascValue;
+            const container = pill.parentElement;
+            container.querySelectorAll('.rw-toggle-pill').forEach(p => p.classList.remove('on'));
+            pill.classList.add('on');
+          }
           updatePrice();
         });
       });
     }
-    
-    if (question.id === 'urgent') {
-      const urgentBox = document.getElementById('urgent-box');
-      const urgentChk = document.getElementById('urgent-chk');
-      if (answers.urgent) {
-        urgentChk.checked = true;
-        urgentBox.classList.add('selected');
-      }
-      urgentBox.addEventListener('click', () => {
-        urgentChk.checked = !urgentChk.checked;
-        urgentBox.classList.toggle('selected', urgentChk.checked);
-        answers.urgent = urgentChk.checked;
-        updatePrice();
-      });
-    }
-    
-    if (question.type === 'select' && question.id !== 'accessType' && question.id !== 'movers') {
-      const select = document.getElementById(`input-${question.id}`);
-      select.addEventListener('change', () => {
-        answers[question.id] = select.value;
-      });
-    }
-    
-    if (question.type === 'text' || question.type === 'tel') {
-      const input = document.getElementById(`input-${question.id}`);
-      input.addEventListener('input', () => {
-        answers[question.id] = input.value;
-      });
-    }
-    
-    if (question.type === 'date') {
-      const dateInput = document.getElementById(`input-${question.id}`);
-      dateInput.addEventListener('change', () => {
-        answers[question.id] = dateInput.value;
-      });
-    }
-  }
+  
   // ============================================================
 // SECTION 7 : OBJETS (MULTISELECT)
 // ============================================================
@@ -1631,6 +1255,7 @@
   function updatePrice() {
     let total = 38;
     
+    // Distance
     const distPrice = distanceKm;
     total += distPrice;
     const priceDist = document.getElementById('price-dist');
@@ -1642,6 +1267,7 @@
       }
     }
     
+    // Objets
     let itemsPrice = 0;
     for (const item of itemsList) {
       itemsPrice += (itemQuantities[item.id] || 0) * item.price;
@@ -1650,9 +1276,16 @@
     const priceItems = document.getElementById('price-items');
     if (priceItems) priceItems.textContent = `${itemsPrice}€`;
     
+    // Étages (uniquement si Montée en étage)
     let floorPrice = 0;
-    if (answers.accessType === 'Montée en étage' && answers.hasElevator === false) {
-      floorPrice = 30;
+    if (answers.accessType === 'Montée en étage') {
+      // Supplément par étage sans ascenseur : 8€ par étage
+      if (!answers.elevatorDepart && answers.floorDepart > 0) {
+        floorPrice += answers.floorDepart * 8;
+      }
+      if (!answers.elevatorArrival && answers.floorArrival > 0) {
+        floorPrice += answers.floorArrival * 8;
+      }
     }
     total += floorPrice;
     const rowFloor = document.getElementById('price-row-floor');
@@ -1664,6 +1297,7 @@
       rowFloor.style.display = 'none';
     }
     
+    // Déménageurs
     let moversPrice = 0;
     if (answers.movers === '2 déménageurs') moversPrice = 20;
     if (answers.movers === '3 déménageurs') moversPrice = 40;
@@ -1677,6 +1311,7 @@
       rowMovers.style.display = 'none';
     }
     
+    // Urgent
     let urgentPrice = 0;
     if (answers.urgent) {
       urgentPrice = Math.round(total * 0.2);
@@ -1694,38 +1329,40 @@
     const totalEl = document.getElementById('price-total');
     if (totalEl) totalEl.textContent = Math.round(total);
     
-    // Mettre à jour aussi le panneau final s'il existe
+    // Mettre à jour également le panneau final s'il existe
     const totalFinal = document.getElementById('price-total-final');
-    if (totalFinal) totalFinal.textContent = Math.round(total);
-    const priceDistFinal = document.getElementById('price-dist-final');
-    if (priceDistFinal) priceDistFinal.textContent = `${distPrice}€`;
-    const priceItemsFinal = document.getElementById('price-items-final');
-    if (priceItemsFinal) priceItemsFinal.textContent = `${itemsPrice}€`;
-    const priceFloorFinal = document.getElementById('price-floor-final');
-    if (priceFloorFinal) {
-      if (floorPrice > 0) {
-        document.getElementById('price-row-floor-final').style.display = '';
-        priceFloorFinal.textContent = `${floorPrice}€`;
-      } else {
-        document.getElementById('price-row-floor-final').style.display = 'none';
+    if (totalFinal) {
+      totalFinal.textContent = Math.round(total);
+      const priceDistFinal = document.getElementById('price-dist-final');
+      if (priceDistFinal) priceDistFinal.textContent = `${distPrice}€`;
+      const priceItemsFinal = document.getElementById('price-items-final');
+      if (priceItemsFinal) priceItemsFinal.textContent = `${itemsPrice}€`;
+      const priceFloorFinal = document.getElementById('price-floor-final');
+      if (priceFloorFinal) {
+        if (floorPrice > 0) {
+          document.getElementById('price-row-floor-final').style.display = '';
+          priceFloorFinal.textContent = `${floorPrice}€`;
+        } else {
+          document.getElementById('price-row-floor-final').style.display = 'none';
+        }
       }
-    }
-    const priceMoversFinal = document.getElementById('price-movers-final');
-    if (priceMoversFinal) {
-      if (moversPrice > 0) {
-        document.getElementById('price-row-movers-final').style.display = '';
-        priceMoversFinal.textContent = `${moversPrice}€`;
-      } else {
-        document.getElementById('price-row-movers-final').style.display = 'none';
+      const priceMoversFinal = document.getElementById('price-movers-final');
+      if (priceMoversFinal) {
+        if (moversPrice > 0) {
+          document.getElementById('price-row-movers-final').style.display = '';
+          priceMoversFinal.textContent = `${moversPrice}€`;
+        } else {
+          document.getElementById('price-row-movers-final').style.display = 'none';
+        }
       }
-    }
-    const priceUrgentFinal = document.getElementById('price-urgent-final');
-    if (priceUrgentFinal) {
-      if (urgentPrice > 0) {
-        document.getElementById('price-row-urgent-final').style.display = '';
-        priceUrgentFinal.textContent = `${urgentPrice}€`;
-      } else {
-        document.getElementById('price-row-urgent-final').style.display = 'none';
+      const priceUrgentFinal = document.getElementById('price-urgent-final');
+      if (priceUrgentFinal) {
+        if (urgentPrice > 0) {
+          document.getElementById('price-row-urgent-final').style.display = '';
+          priceUrgentFinal.textContent = `${urgentPrice}€`;
+        } else {
+          document.getElementById('price-row-urgent-final').style.display = 'none';
+        }
       }
     }
   }
