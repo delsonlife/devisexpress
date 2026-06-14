@@ -181,10 +181,10 @@
     "active": true,
     "company": {
       "name": "Déménagement Lyon Express",
-      "domain": "demenagement-lyon.fr",
+      "domain": "devis-couvreur1.vercel.app",
       "email": "contact@demenagement-lyon.fr"
     },
-    "allowedOrigins": ["https://demenagement-lyon.fr"],
+    "allowedOrigins": ["https://devis-couvreur1.vercel.app"],
     "branding": {
       "primaryColor": "#1e30d4"
     },
