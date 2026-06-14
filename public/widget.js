@@ -1101,8 +1101,7 @@
             <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
           </div>
           <div class="rw-price-reassure">
-            <div class="rw-price-reassure-item">✅ Prix fixe, aucun frais caché</div>
-            <div class="rw-price-reassure-item">📞 Rappel sous 2 heures</div>
+            
           </div>
         </div>
       </div>
