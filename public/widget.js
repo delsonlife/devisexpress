@@ -1572,13 +1572,18 @@
     if (fillEl) fillEl.style.width = `${pct}%`;
   }
 
-     // ============================================================
-// SECTION 8 : DISTANCE (sans proxy, calcul vol d'oiseau)
+ // ============================================================
+// SECTION 8 : DISTANCE (calcul vol d'oiseau avec log)
 // ============================================================
   async function calculateDistance() {
     const dep = addressCoords.departureAddress;
     const arr = addressCoords.arrivalAddress;
-    if (!dep || !arr) return;
+    if (!dep || !arr) {
+      console.log('Adresses manquantes');
+      return;
+    }
+    
+    console.log('Calcul distance entre:', dep.lat, dep.lon, 'et', arr.lat, arr.lon);
     
     const badge = document.getElementById('dist-badge');
     if (!badge) return;
@@ -1591,35 +1596,28 @@
     distIcon.textContent = '⏳';
     distText.textContent = 'Calcul de la distance…';
     
-    try {
-      // Formule de Haversine (distance vol d'oiseau en km)
-      const R = 6371; // Rayon terrestre en km
-      const lat1 = dep.lat * Math.PI / 180;
-      const lat2 = arr.lat * Math.PI / 180;
-      const dLat = (arr.lat - dep.lat) * Math.PI / 180;
-      const dLon = (arr.lon - dep.lon) * Math.PI / 180;
-      
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1) * Math.cos(lat2) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      const distance = R * c;
-      
-      distanceKm = Math.round(distance);
-      
-      badge.className = 'rw-dist-badge';
-      distIcon.textContent = '📏';
-      distText.textContent = `Distance estimée : ${distanceKm} km (à vol d'oiseau)`;
-      
-      // Mettre à jour l'affichage du prix
-      updatePrice();
-      
-    } catch (err) {
-      console.warn('Distance error:', err);
-      badge.style.display = 'none';
-      distanceKm = 0;
-      updatePrice();
-    }
+    // Formule de Haversine
+    const R = 6371;
+    const lat1 = dep.lat * Math.PI / 180;
+    const lat2 = arr.lat * Math.PI / 180;
+    const dLat = (arr.lat - dep.lat) * Math.PI / 180;
+    const dLon = (arr.lon - dep.lon) * Math.PI / 180;
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1) * Math.cos(lat2) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+    
+    distanceKm = Math.round(distance);
+    console.log('Distance calculée:', distanceKm, 'km');
+    
+    badge.className = 'rw-dist-badge';
+    distIcon.textContent = '📏';
+    distText.textContent = `Distance estimée : ${distanceKm} km`;
+    
+    // Mettre à jour l'affichage du prix
+    updatePrice();
   }
 // ============================================================
 // SECTION 9 : MISE À JOUR PRIX
