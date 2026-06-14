@@ -4,7 +4,7 @@
 
 // Clé API OpenRouteService (gratuite)
 // Inscription : https://openrouteservice.org/sign-up/
-const ORS_API_KEY = 'TON_API_KEY_ICI';
+const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjhkMDMxYzE2MWRhODQ4NDFiNGY2MzhiNGFjNTQ2ZmM2IiwiaCI6Im11cm11cjY0In0=';
 
 // Fonction de géocodage + calcul de distance
 async function getDistance(departure, arrival) {
