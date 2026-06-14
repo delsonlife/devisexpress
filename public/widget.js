@@ -1572,11 +1572,9 @@
     if (fillEl) fillEl.style.width = `${pct}%`;
   }
 
+   // ============================================================
+// SECTION 8 : DISTANCE (via proxy Vercel)
 // ============================================================
-// SECTION 8 : DISTANCE OPENROUTESERVICE
-// ============================================================
-  const ORS_KEY = '5b3ce3597851110001cf6248a2e2b44aa88e41db9c515d4258e8c668';
-  
   async function calculateDistance() {
     const dep = addressCoords.departureAddress;
     const arr = addressCoords.arrivalAddress;
@@ -1594,18 +1592,18 @@
     distText.textContent = 'Calcul de la distance routière…';
     
     try {
-      const body = { coordinates: [[dep.lon, dep.lat], [arr.lon, arr.lat]] };
+      const coordinates = [[dep.lon, dep.lat], [arr.lon, arr.lat]];
       
-      const response = await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
+      // Appel au proxy Vercel (évite CORS)
+      const response = await fetch(`${API_BASE}/api/proxy`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': ORS_KEY
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ coordinates })
       });
       
-      if (!response.ok) throw new Error('ORS error');
+      if (!response.ok) throw new Error('Proxy error');
       
       const data = await response.json();
       const meters = data.routes[0].summary.distance;
@@ -1615,16 +1613,16 @@
       distIcon.textContent = '📏';
       distText.textContent = `Distance routière réelle : ${distanceKm} km`;
       
-      // Mettre à jour l'affichage du prix immédiatement
       updatePrice();
       
     } catch (err) {
-      console.warn('ORS failed', err);
+      console.warn('Distance error:', err);
       badge.style.display = 'none';
       distanceKm = 0;
       updatePrice();
     }
   }
+  
 // ============================================================
 // SECTION 9 : MISE À JOUR PRIX
 // ============================================================
