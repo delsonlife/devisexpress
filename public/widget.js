@@ -1572,13 +1572,16 @@
     if (fillEl) fillEl.style.width = `${pct}%`;
   }
 
-   // ============================================================
+    // ============================================================
 // SECTION 8 : DISTANCE (via proxy Vercel)
 // ============================================================
   async function calculateDistance() {
     const dep = addressCoords.departureAddress;
     const arr = addressCoords.arrivalAddress;
-    if (!dep || !arr) return;
+    if (!dep || !arr) {
+      console.log('Adresses manquantes');
+      return;
+    }
     
     const badge = document.getElementById('dist-badge');
     if (!badge) return;
@@ -1594,7 +1597,8 @@
     try {
       const coordinates = [[dep.lon, dep.lat], [arr.lon, arr.lat]];
       
-      // Appel au proxy Vercel (évite CORS)
+      console.log('Appel proxy avec coordonnées:', coordinates);
+      
       const response = await fetch(`${API_BASE}/api/proxy`, {
         method: 'POST',
         headers: {
@@ -1603,17 +1607,28 @@
         body: JSON.stringify({ coordinates })
       });
       
-      if (!response.ok) throw new Error('Proxy error');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Proxy error');
+      }
       
       const data = await response.json();
-      const meters = data.routes[0].summary.distance;
-      distanceKm = Math.round(meters / 1000);
+      console.log('Réponse proxy:', data);
       
-      badge.className = 'rw-dist-badge';
-      distIcon.textContent = '📏';
-      distText.textContent = `Distance routière réelle : ${distanceKm} km`;
-      
-      updatePrice();
+      // Vérifier la structure de la réponse
+      if (data && data.routes && data.routes[0] && data.routes[0].summary) {
+        const meters = data.routes[0].summary.distance;
+        distanceKm = Math.round(meters / 1000);
+        
+        badge.className = 'rw-dist-badge';
+        distIcon.textContent = '📏';
+        distText.textContent = `Distance routière réelle : ${distanceKm} km`;
+        
+        // Mettre à jour l'affichage du prix
+        updatePrice();
+      } else {
+        throw new Error('Structure de réponse invalide');
+      }
       
     } catch (err) {
       console.warn('Distance error:', err);
