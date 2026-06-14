@@ -33,7 +33,7 @@
     LICENSE_KEY = urlParams.get('license');
   }
   
-  // Méthode 4 : valeur par défaut (pour test)
+  // Méthode 4 : valeur par défaut
   if (!LICENSE_KEY) {
     LICENSE_KEY = 'MOVING001';
     console.warn('[Widget] Licence par défaut utilisée');
@@ -45,12 +45,14 @@
 // SECTION 2 : CONFIGURATION GLOBALE
 // ============================================================
   const API_BASE = 'https://devisexpress-two.vercel.app';
-  let currentStep = 0;
+  let currentQuestionIndex = 0;
   let answers = {};
   let config = null;
   let quoteResult = null;
   let distanceKm = 0;
   let addressCoords = {};
+  let container = null;
+  let questions = [];
 
 // ============================================================
 // SECTION 3 : INJECTION DU CSS PREMIUM
@@ -85,7 +87,6 @@
         margin: 0 auto;
       }
 
-      /* Progress */
       .rw-progress-container {
         padding: 1.5rem 2rem 0.5rem;
         background: #f8fafc;
@@ -116,7 +117,6 @@
         transition: width 0.3s ease;
       }
 
-      /* Layout */
       .rw-wizard-body {
         display: grid;
         grid-template-columns: 1fr 300px;
@@ -133,7 +133,6 @@
         padding: 2rem;
       }
 
-      /* Step panel */
       .rw-step-panel {
         display: none;
         animation: rw-fadeIn 0.3s ease;
@@ -161,7 +160,6 @@
         margin-bottom: 1.5rem;
       }
 
-      /* Address input */
       .rw-addr-wrap {
         position: relative;
         margin-bottom: 1.5rem;
@@ -225,7 +223,6 @@
         background: #f0f4ff;
       }
 
-      /* Distance badge */
       .rw-dist-badge {
         display: none;
         align-items: center;
@@ -246,13 +243,6 @@
         color: var(--rw-primary);
       }
 
-      .rw-dist-badge.error {
-        background: #fff1f2;
-        border-color: #fecdd3;
-        color: #be123c;
-      }
-
-      /* Item grid */
       .rw-item-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -340,7 +330,6 @@
         text-align: center;
       }
 
-      /* Truck bar */
       .rw-truck-bar {
         background: #f1f5f9;
         border-radius: 0.75rem;
@@ -372,7 +361,6 @@
         width: 0%;
       }
 
-      /* Access cards */
       .rw-access-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -414,7 +402,6 @@
         color: var(--rw-gray-400);
       }
 
-      /* Floor section */
       .rw-floor-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -476,7 +463,6 @@
         color: white;
       }
 
-      /* Urgent box */
       .rw-urgent-box {
         border: 1.5px solid #fcd34d;
         background: #fffbeb;
@@ -506,7 +492,6 @@
         color: #b45309;
       }
 
-      /* Movers grid */
       .rw-movers-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -545,7 +530,6 @@
         margin-top: 0.125rem;
       }
 
-      /* Forms */
       .rw-form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -590,7 +574,6 @@
         box-shadow: 0 0 0 3px rgba(30, 48, 212, 0.07);
       }
 
-      /* Recap pills */
       .rw-recap {
         background: #f8fafc;
         border: 1px solid var(--rw-gray-200);
@@ -623,7 +606,6 @@
         padding: 0.1875rem 0.625rem;
       }
 
-      /* Navigation */
       .rw-step-nav {
         display: flex;
         justify-content: space-between;
@@ -689,7 +671,6 @@
         box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
       }
 
-      /* Price panel */
       .rw-price-panel {
         background: #111750;
         padding: 1.75rem 1.5rem;
@@ -745,44 +726,6 @@
         font-weight: 700;
       }
 
-      .rw-price-btn {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.5rem;
-        background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        color: #111750;
-        font-weight: 800;
-        font-size: 0.875rem;
-        padding: 0.8125rem;
-        border-radius: 0.625rem;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-        margin-top: 1rem;
-      }
-
-      .rw-price-btn:hover {
-        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-      }
-
-      .rw-price-reassure {
-        display: flex;
-        flex-direction: column;
-        gap: 0.375rem;
-        margin-top: 0.875rem;
-      }
-
-      .rw-price-reassure-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.6875rem;
-        color: rgba(255, 255, 255, 0.45);
-      }
-
-      /* Success */
       .rw-success-state {
         display: none;
         text-align: center;
@@ -823,7 +766,6 @@
         margin-bottom: 1.5rem;
       }
 
-      /* Loading */
       .rw-loading {
         text-align: center;
         padding: 2rem;
@@ -854,10 +796,6 @@
 // ============================================================
 // SECTION 4 : FONCTIONS DE BASE
 // ============================================================
-  let currentQuestionIndex = 0;
-  let questions = [];
-  let container = null;
-
   async function init() {
     injectCSS();
     const isValid = await loadConfig();
@@ -913,7 +851,6 @@
       target.appendChild(container);
     }
     
-    // Initialiser les réponses
     answers = {};
     currentQuestionIndex = 0;
     
@@ -921,9 +858,61 @@
   }
 
 // ============================================================
-// SECTION 5 : RENDU PRINCIPAL
+// SECTION 5 : RENDU PRINCIPAL + RENDERQUESTION + RENDERFINALFORM
 // ============================================================
-        case 'select':
+  function render() {
+    if (currentQuestionIndex < questions.length) {
+      renderQuestion(container, questions[currentQuestionIndex], currentQuestionIndex, questions.length);
+    } else {
+      renderFinalForm();
+    }
+  }
+
+  function renderQuestion(container, question, index, total) {
+    const progress = ((index + 1) / total) * 100;
+    const isLastQuestion = (index + 1 === total);
+    
+    let html = `
+      <div class="rw-progress-container">
+        <div class="rw-progress-label">
+          <span>Étape ${index + 1} sur ${total}</span>
+          <span>${Math.round(progress)}%</span>
+        </div>
+        <div class="rw-progress-bar">
+          <div class="rw-progress-fill" style="width: ${progress}%;"></div>
+        </div>
+      </div>
+      <div class="rw-wizard-body">
+        <div class="rw-steps-area">
+          <div class="rw-step-panel active">
+            <div class="rw-step-title">${question.label}</div>
+            <div class="rw-step-desc">${question.placeholder || ''}</div>
+    `;
+    
+    switch(question.type) {
+      case 'address':
+        html += `
+          <div class="rw-addr-wrap">
+            <span class="rw-addr-icon">📍</span>
+            <input type="text" id="addr-input-${question.id}" class="rw-addr-input" 
+                   placeholder="${question.placeholder}" autocomplete="off">
+            <div class="rw-addr-suggestions" id="suggest-${question.id}"></div>
+          </div>
+          ${question.id === 'arrivalAddress' ? '<div class="rw-dist-badge" id="dist-badge" style="display:none"><span id="dist-icon">📏</span><span id="dist-text"></span></div>' : ''}
+        `;
+        break;
+        
+      case 'multiselect':
+        html += `
+          <div class="rw-item-grid" id="item-grid"></div>
+          <div class="rw-truck-bar">
+            <div class="rw-truck-label"><span>🚚 Remplissage camion 12m³</span><span id="truck-pct">0%</span></div>
+            <div class="rw-truck-bg"><div class="rw-truck-fill" id="truck-fill"></div></div>
+          </div>
+        `;
+        break;
+        
+      case 'select':
         if (question.id === 'accessType') {
           html += `
             <div class="rw-access-grid" id="access-grid">
@@ -995,14 +984,341 @@
           html += `</select>`;
         }
         break;
-  // ============================================================
+        
+      case 'checkbox':
+        if (question.id === 'urgent') {
+          html += `
+            <div class="rw-urgent-box" id="urgent-box">
+              <input type="checkbox" id="urgent-chk" style="width:1rem;height:1rem;accent-color:#f59e0b">
+              <span style="font-size:1.125rem">⚡</span>
+              <div>
+                <div class="rw-urgent-text">Transport urgent (+20%)</div>
+                <div class="rw-urgent-sub">Livraison dans les prochaines heures</div>
+              </div>
+            </div>
+          `;
+        }
+        break;
+        
+      case 'date':
+        const today = new Date().toISOString().split('T')[0];
+        html += `<input type="date" id="input-${question.id}" class="rw-form-input" value="${today}">`;
+        break;
+        
+      case 'text':
+      case 'tel':
+        html += `<input type="${question.type}" id="input-${question.id}" class="rw-form-input" placeholder="">`;
+        break;
+    }
+    
+    const buttonText = isLastQuestion ? 'Obtenir mon devis' : 'Suivant';
+    const buttonClass = isLastQuestion ? 'rw-btn-submit' : 'rw-btn-next';
+    
+    html += `
+            <div class="rw-step-nav">
+              <button class="rw-btn-back" id="rw-prev" ${index === 0 ? 'disabled style="opacity:0.5"' : ''}>← Retour</button>
+              <button class="${buttonClass}" id="rw-next">${buttonText} →</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="rw-price-panel">
+          <div class="rw-price-label">Prix estimé</div>
+          <div class="rw-price-amount"><span id="price-total">38</span>€</div>
+          <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
+          <div class="rw-price-rows">
+            <div class="rw-price-row"><span>Base</span><span>38€</span></div>
+            <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
+            <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
+            <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Étages</span><span id="price-floor">0€</span></div>
+            <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
+            <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    attachEvents(question);
+    
+    document.getElementById('rw-prev')?.addEventListener('click', prevStep);
+    document.getElementById('rw-next')?.addEventListener('click', () => {
+      if (isLastQuestion) {
+        submitForm();
+      } else {
+        nextStep();
+      }
+    });
+  }
+
+  function renderFinalForm() {
+    const html = `
+      <div class="rw-progress-container">
+        <div class="rw-progress-label">
+          <span>Dernière étape</span>
+          <span>100%</span>
+        </div>
+        <div class="rw-progress-bar">
+          <div class="rw-progress-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+      <div class="rw-wizard-body">
+        <div class="rw-steps-area">
+          <div class="rw-step-panel active">
+            <div class="rw-step-title">Date et coordonnées</div>
+            <div class="rw-step-desc">Planifiez votre déménagement et recevez votre devis.</div>
+            
+            <div class="rw-recap" id="recap-box">
+              <div class="rw-recap-title">Récapitulatif</div>
+              <div class="rw-recap-pills" id="recap-pills"></div>
+            </div>
+            
+            <div class="rw-form-grid">
+              <div class="rw-form-row">
+                <label class="rw-form-label">📅 Date souhaitée</label>
+                <input id="input-date" type="date" class="rw-form-input">
+              </div>
+              <div class="rw-form-row">
+                <label class="rw-form-label">🕐 Heure</label>
+                <select id="input-time" class="rw-form-input">
+                  <option>08:00</option><option>09:00</option><option>10:00</option>
+                  <option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="rw-form-row">
+              <label class="rw-form-label">👤 Votre nom</label>
+              <input id="input-fullName" type="text" class="rw-form-input" placeholder="Jean Dupont">
+            </div>
+            <div class="rw-form-row">
+              <label class="rw-form-label">📱 Téléphone</label>
+              <input id="input-phone" type="tel" class="rw-form-input" placeholder="">
+            </div>
+            
+            <div class="rw-step-nav">
+              <button class="rw-btn-back" id="rw-prev-final">← Retour</button>
+              <button class="rw-btn-submit" id="rw-submit-final">Envoyer ma demande →</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="rw-price-panel">
+          <div class="rw-price-label">Prix estimé</div>
+          <div class="rw-price-amount"><span id="price-total-final">38</span>€</div>
+          <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
+          <div class="rw-price-rows">
+            <div class="rw-price-row"><span>Base</span><span>38€</span></div>
+            <div class="rw-price-row" id="price-row-dist-final"><span>Distance</span><span id="price-dist-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-items-final"><span>Objets</span><span id="price-items-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-floor-final" style="display:none"><span>Étages</span><span id="price-floor-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-movers-final" style="display:none"><span>Déménageurs</span><span id="price-movers-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-urgent-final" style="display:none"><span>Urgent +20%</span><span id="price-urgent-final">0€</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    const today = new Date();
+    today.setDate(today.getDate() + 7);
+    const dateInput = document.getElementById('input-date');
+    if (dateInput) dateInput.value = today.toISOString().split('T')[0];
+    
+    updateRecapAndPrice();
+    
+    document.getElementById('rw-prev-final')?.addEventListener('click', () => {
+      currentQuestionIndex = questions.length - 1;
+      render();
+    });
+    
+    document.getElementById('rw-submit-final')?.addEventListener('click', () => {
+      const name = document.getElementById('input-fullName')?.value;
+      const phone = document.getElementById('input-phone')?.value;
+      const date = document.getElementById('input-date')?.value;
+      const time = document.getElementById('input-time')?.value;
+      
+      if (!name || !phone) {
+        alert('Veuillez renseigner votre nom et téléphone');
+        return;
+      }
+      
+      answers.fullName = name;
+      answers.phone = phone;
+      answers.date = date;
+      answers.time = time;
+      answers.distanceKm = distanceKm;
+      answers.items = Object.keys(itemQuantities).filter(id => itemQuantities[id] > 0);
+      answers.itemQuantities = { ...itemQuantities };
+      
+      calculateQuote();
+    });
+  }
+
+  function updateRecapAndPrice() {
+    const recapPills = document.getElementById('recap-pills');
+    if (recapPills) {
+      const pills = [];
+      if (answers.departureAddress) pills.push(`📍 ${answers.departureAddress.split(',')[0]}`);
+      if (answers.arrivalAddress) pills.push(`🏠 ${answers.arrivalAddress.split(',')[0]}`);
+      if (distanceKm) pills.push(`📏 ${distanceKm} km`);
+      const itemCount = Object.values(itemQuantities).reduce((s, q) => s + q, 0);
+      if (itemCount > 0) pills.push(`📦 ${itemCount} objet(s)`);
+      recapPills.innerHTML = pills.map(p => `<span class="rw-recap-pill">${p}</span>`).join('');
+    }
+    updatePriceFinal();
+  }
+
+  function updatePriceFinal() {
+    let total = 38;
+    
+    const distPrice = distanceKm;
+    total += distPrice;
+    const priceDist = document.getElementById('price-dist-final');
+    if (priceDist) priceDist.textContent = `${distPrice}€`;
+    
+    let itemsPrice = 0;
+    for (const item of itemsList) {
+      itemsPrice += (itemQuantities[item.id] || 0) * item.price;
+    }
+    total += itemsPrice;
+    const priceItems = document.getElementById('price-items-final');
+    if (priceItems) priceItems.textContent = `${itemsPrice}€`;
+    
+    let floorPrice = 0;
+    if (answers.accessType === 'Montée en étage') {
+      if (!answers.elevatorDepart && answers.floorDepart > 0) {
+        floorPrice += answers.floorDepart * 8;
+      }
+      if (!answers.elevatorArrival && answers.floorArrival > 0) {
+        floorPrice += answers.floorArrival * 8;
+      }
+    }
+    total += floorPrice;
+    const rowFloor = document.getElementById('price-row-floor-final');
+    const priceFloor = document.getElementById('price-floor-final');
+    if (floorPrice > 0) {
+      rowFloor.style.display = '';
+      priceFloor.textContent = `${floorPrice}€`;
+    } else {
+      rowFloor.style.display = 'none';
+    }
+    
+    let moversPrice = 0;
+    if (answers.movers === '2 déménageurs') moversPrice = 20;
+    if (answers.movers === '3 déménageurs') moversPrice = 40;
+    total += moversPrice;
+    const rowMovers = document.getElementById('price-row-movers-final');
+    const priceMovers = document.getElementById('price-movers-final');
+    if (moversPrice > 0) {
+      rowMovers.style.display = '';
+      priceMovers.textContent = `${moversPrice}€`;
+    } else {
+      rowMovers.style.display = 'none';
+    }
+    
+    let urgentPrice = 0;
+    if (answers.urgent) {
+      urgentPrice = Math.round(total * 0.2);
+      total = total * 1.2;
+    }
+    const rowUrgent = document.getElementById('price-row-urgent-final');
+    const priceUrgent = document.getElementById('price-urgent-final');
+    if (urgentPrice > 0) {
+      rowUrgent.style.display = '';
+      priceUrgent.textContent = `${urgentPrice}€`;
+    } else {
+      rowUrgent.style.display = 'none';
+    }
+    
+    const totalEl = document.getElementById('price-total-final');
+    if (totalEl) totalEl.textContent = Math.round(total);
+  }
+
+// ============================================================
 // SECTION 6 : ÉVÉNEMENTS PAR TYPE DE QUESTION
 // ============================================================
-     if (question.id === 'accessType') {
+  let addressTimers = {};
+  let suggestionsData = {};
+
+  function attachEvents(question) {
+    if (question.type === 'address') {
+      const input = document.getElementById(`addr-input-${question.id}`);
+      const suggestBox = document.getElementById(`suggest-${question.id}`);
+      
+      input.addEventListener('input', () => {
+        const query = input.value.trim();
+        if (query.length < 3) {
+          suggestBox.classList.remove('open');
+          return;
+        }
+        
+        clearTimeout(addressTimers[question.id]);
+        addressTimers[question.id] = setTimeout(() => {
+          fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`)
+            .then(r => r.json())
+            .then(data => {
+              if (!data.features?.length) {
+                suggestBox.classList.remove('open');
+                return;
+              }
+              
+              suggestionsData[question.id] = data.features.map(f => ({
+                label: f.properties.label,
+                context: f.properties.context,
+                lat: f.geometry.coordinates[1],
+                lon: f.geometry.coordinates[0]
+              }));
+              
+              suggestBox.innerHTML = suggestionsData[question.id].map((item, idx) => `
+                <div class="rw-addr-sugg-item" data-idx="${idx}">
+                  <span>📍</span>
+                  <div>
+                    <div style="font-weight:600">${item.label}</div>
+                    <div style="font-size:0.75rem;color:#94a3b8">${item.context}</div>
+                  </div>
+                </div>
+              `).join('');
+              
+              suggestBox.classList.add('open');
+              
+              document.querySelectorAll(`#suggest-${question.id} .rw-addr-sugg-item`).forEach(el => {
+                el.addEventListener('click', () => {
+                  const idx = parseInt(el.dataset.idx);
+                  const selected = suggestionsData[question.id][idx];
+                  input.value = selected.label;
+                  suggestBox.classList.remove('open');
+                  
+                  addressCoords[question.id] = { lat: selected.lat, lon: selected.lon };
+                  answers[question.id] = selected.label;
+                  
+                  if (addressCoords.departureAddress && addressCoords.arrivalAddress) {
+                    calculateDistance();
+                  }
+                  updatePrice();
+                });
+              });
+            });
+        }, 300);
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (suggestBox && !suggestBox.contains(e.target) && e.target !== input) {
+          suggestBox.classList.remove('open');
+        }
+      });
+    }
+    
+    if (question.type === 'multiselect') {
+      renderItemsGrid();
+    }
+    
+    if (question.id === 'accessType') {
       if (!answers.accessType) {
         answers.accessType = 'Trottoir à trottoir';
       }
-      // Initialiser les étages
       if (answers.floorDepart === undefined) answers.floorDepart = 0;
       if (answers.floorArrival === undefined) answers.floorArrival = 0;
       if (answers.elevatorDepart === undefined) answers.elevatorDepart = true;
@@ -1023,10 +1339,9 @@
           const floorSection = document.getElementById('floor-section');
           if (value === 'Montée en étage') {
             floorSection.style.display = 'block';
-            // Mettre à jour l'affichage des étages
             document.getElementById('floor-depart-val').textContent = answers.floorDepart;
             document.getElementById('floor-arrival-val').textContent = answers.floorArrival;
-            // Mettre à jour les boutons ascenseur
+            
             const departAscOui = document.querySelector('#floor-section .rw-floor-card:first-child .rw-toggle-pill[data-asc="true"]');
             const departAscNon = document.querySelector('#floor-section .rw-floor-card:first-child .rw-toggle-pill[data-asc="false"]');
             const arrivalAscOui = document.querySelector('#floor-section .rw-floor-card:last-child .rw-toggle-pill[data-asc="true"]');
@@ -1058,7 +1373,6 @@
         floorSectionEl.style.display = 'block';
       }
       
-      // Gestion des boutons + / - pour étages
       document.querySelectorAll('.rw-qty-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const side = btn.dataset.side;
@@ -1076,7 +1390,6 @@
         });
       });
       
-      // Gestion des boutons ascenseur
       document.querySelectorAll('.rw-toggle-pill').forEach(pill => {
         const side = pill.dataset.side;
         const asc = pill.dataset.asc === 'true';
@@ -1106,8 +1419,66 @@
         });
       });
     }
-  
-  // ============================================================
+    
+    if (question.id === 'movers') {
+      if (!answers.movers) {
+        answers.movers = '1 déménageur';
+      }
+      
+      document.querySelectorAll('.rw-mover-card').forEach(card => {
+        const cardValue = card.dataset.value;
+        if (cardValue === answers.movers) {
+          card.classList.add('selected');
+        }
+        
+        card.addEventListener('click', () => {
+          const value = card.dataset.value;
+          answers.movers = value;
+          document.querySelectorAll('.rw-mover-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          updatePrice();
+        });
+      });
+    }
+    
+    if (question.id === 'urgent') {
+      const urgentBox = document.getElementById('urgent-box');
+      const urgentChk = document.getElementById('urgent-chk');
+      if (answers.urgent) {
+        urgentChk.checked = true;
+        urgentBox.classList.add('selected');
+      }
+      urgentBox.addEventListener('click', () => {
+        urgentChk.checked = !urgentChk.checked;
+        urgentBox.classList.toggle('selected', urgentChk.checked);
+        answers.urgent = urgentChk.checked;
+        updatePrice();
+      });
+    }
+    
+    if (question.type === 'select' && question.id !== 'accessType' && question.id !== 'movers') {
+      const select = document.getElementById(`input-${question.id}`);
+      select.addEventListener('change', () => {
+        answers[question.id] = select.value;
+      });
+    }
+    
+    if (question.type === 'text' || question.type === 'tel') {
+      const input = document.getElementById(`input-${question.id}`);
+      input.addEventListener('input', () => {
+        answers[question.id] = input.value;
+      });
+    }
+    
+    if (question.type === 'date') {
+      const dateInput = document.getElementById(`input-${question.id}`);
+      dateInput.addEventListener('change', () => {
+        answers[question.id] = dateInput.value;
+      });
+    }
+  }
+
+// ============================================================
 // SECTION 7 : OBJETS (MULTISELECT)
 // ============================================================
   const itemsList = [
@@ -1194,7 +1565,8 @@
     if (pctEl) pctEl.textContent = `${pct}%`;
     if (fillEl) fillEl.style.width = `${pct}%`;
   }
-  // ============================================================
+
+// ============================================================
 // SECTION 8 : DISTANCE OPENROUTESERVICE
 // ============================================================
   const ORS_KEY = '5b3ce3597851110001cf6248a2e2b44aa88e41db9c515d4258e8c668';
@@ -1238,7 +1610,7 @@
       distText.textContent = `Distance routière réelle : ${distanceKm} km`;
       
       const distRow = document.getElementById('price-row-dist');
-      if (distRow) {
+      if (distRow && distanceKm > 0) {
         distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
       }
       
@@ -1249,13 +1621,13 @@
       updatePrice();
     }
   }
-  // ============================================================
+
+// ============================================================
 // SECTION 9 : MISE À JOUR PRIX
 // ============================================================
   function updatePrice() {
     let total = 38;
     
-    // Distance
     const distPrice = distanceKm;
     total += distPrice;
     const priceDist = document.getElementById('price-dist');
@@ -1267,7 +1639,6 @@
       }
     }
     
-    // Objets
     let itemsPrice = 0;
     for (const item of itemsList) {
       itemsPrice += (itemQuantities[item.id] || 0) * item.price;
@@ -1276,10 +1647,8 @@
     const priceItems = document.getElementById('price-items');
     if (priceItems) priceItems.textContent = `${itemsPrice}€`;
     
-    // Étages (uniquement si Montée en étage)
     let floorPrice = 0;
     if (answers.accessType === 'Montée en étage') {
-      // Supplément par étage sans ascenseur : 8€ par étage
       if (!answers.elevatorDepart && answers.floorDepart > 0) {
         floorPrice += answers.floorDepart * 8;
       }
@@ -1297,7 +1666,6 @@
       rowFloor.style.display = 'none';
     }
     
-    // Déménageurs
     let moversPrice = 0;
     if (answers.movers === '2 déménageurs') moversPrice = 20;
     if (answers.movers === '3 déménageurs') moversPrice = 40;
@@ -1311,7 +1679,6 @@
       rowMovers.style.display = 'none';
     }
     
-    // Urgent
     let urgentPrice = 0;
     if (answers.urgent) {
       urgentPrice = Math.round(total * 0.2);
@@ -1329,7 +1696,6 @@
     const totalEl = document.getElementById('price-total');
     if (totalEl) totalEl.textContent = Math.round(total);
     
-    // Mettre à jour également le panneau final s'il existe
     const totalFinal = document.getElementById('price-total-final');
     if (totalFinal) {
       totalFinal.textContent = Math.round(total);
@@ -1373,7 +1739,6 @@
   function nextStep() {
     const currentQ = questions[currentQuestionIndex];
     
-    // Validation selon type
     if (currentQ.type === 'address') {
       const value = document.getElementById(`addr-input-${currentQ.id}`)?.value;
       if (!value) {
@@ -1393,7 +1758,6 @@
       return;
     }
     
-    // Validation : au moins un objet sélectionné
     if (currentQ.type === 'multiselect') {
       const selectedCount = getSelectedItemsCount();
       if (selectedCount === 0) {
@@ -1416,7 +1780,6 @@
   }
   
   function submitForm() {
-    // Récupérer les champs si on est sur la dernière question
     const name = document.getElementById('input-fullName')?.value;
     const phone = document.getElementById('input-phone')?.value;
     const date = document.getElementById('input-date')?.value;
