@@ -841,21 +841,45 @@
     container.innerHTML = `<div class="rw-error">${message}</div>`;
   }
 
-  function setupWidget() {
-    container = document.getElementById('roof-widget');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'roof-widget';
-      container.className = 'rw-widget';
-      const target = document.getElementById('roof-widget-container') || document.body;
-      target.appendChild(container);
-    }
-    
-    answers = {};
-    currentQuestionIndex = 0;
-    
-    render();
+function setupWidget() {
+  container = document.getElementById('roof-widget');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'roof-widget';
+    container.className = 'rw-widget';
+    const target = document.getElementById('roof-widget-container') || document.body;
+    target.appendChild(container);
   }
+  
+  // Structure fixe
+  container.innerHTML = '<div class="rw-wizard-body" id="rw-wizard-body"></div>';
+  
+  // Ajouter le panneau des prix UNE SEULE FOIS (en dehors des étapes)
+  const wizardBody = document.getElementById('rw-wizard-body');
+  wizardBody.innerHTML = `
+    <div class="rw-steps-area" id="rw-steps-area"></div>
+    <div class="rw-price-panel">
+      <div class="rw-price-label">Prix estimé</div>
+      <div class="rw-price-amount"><span id="price-total">38</span>€</div>
+      <div class="rw-price-sub">TTC · Estimation préliminaire</div>
+      <div class="rw-price-rows">
+        <div class="rw-price-row"><span>Base</span><span>38€</span></div>
+        <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
+        <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
+        <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Étages</span><span id="price-floor">0€</span></div>
+        <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
+        <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
+      </div>
+    </div>
+  `;
+  
+  answers = {};
+  currentQuestionIndex = 0;
+  distanceKm = 0;
+  itemQuantities = {};
+  
+  render();
+}
 
 // ============================================================
 // SECTION 5 : RENDU PRINCIPAL + RENDERQUESTION + RENDERFINALFORM
@@ -868,26 +892,24 @@
     }
   }
 
-  function renderQuestion(container, question, index, total) {
-    const progress = ((index + 1) / total) * 100;
-    const isLastQuestion = (index + 1 === total);
-    
-    let html = `
-      <div class="rw-progress-container">
-        <div class="rw-progress-label">
-          <span>Étape ${index + 1} sur ${total}</span>
-          <span>${Math.round(progress)}%</span>
-        </div>
-        <div class="rw-progress-bar">
-          <div class="rw-progress-fill" style="width: ${progress}%;"></div>
-        </div>
+    function renderQuestion(container, question, index, total) {
+  const progress = ((index + 1) / total) * 100;
+  const isLastQuestion = (index + 1 === total);
+  
+  let html = `
+    <div class="rw-progress-container">
+      <div class="rw-progress-label">
+        <span>Étape ${index + 1} sur ${total}</span>
+        <span>${Math.round(progress)}%</span>
       </div>
-      <div class="rw-wizard-body">
-        <div class="rw-steps-area">
-          <div class="rw-step-panel active">
-            <div class="rw-step-title">${question.label}</div>
-            <div class="rw-step-desc">${question.placeholder || ''}</div>
-    `;
+      <div class="rw-progress-bar">
+        <div class="rw-progress-fill" style="width: ${progress}%;"></div>
+      </div>
+    </div>
+    <div class="rw-step-panel active">
+      <div class="rw-step-title">${question.label}</div>
+      <div class="rw-step-desc">${question.placeholder || ''}</div>
+  `;
     
     switch(question.type) {
       case 'address':
@@ -1021,6 +1043,28 @@
             </div>
           </div>
         </div>
+
+        // Mettre à jour UNIQUEMENT la zone des questions
+  const stepsArea = document.getElementById('rw-steps-area');
+  if (stepsArea) {
+    stepsArea.innerHTML = html;
+  }
+  
+  // Attacher les événements
+  attachEvents(question);
+  
+  document.getElementById('rw-prev')?.addEventListener('click', prevStep);
+  document.getElementById('rw-next')?.addEventListener('click', () => {
+    if (isLastQuestion) {
+      submitForm();
+    } else {
+      nextStep();
+    }
+  });
+  
+  // Restaurer l'affichage des prix
+  updatePrice();
+}
         
         <div class="rw-price-panel">
           <div class="rw-price-label">Prix estimé</div>
@@ -1781,14 +1825,15 @@
   function nextStep() {
     const currentQ = questions[currentQuestionIndex];
     
-    if (currentQ.type === 'address') {
-      const value = document.getElementById(`addr-input-${currentQ.id}`)?.value;
-      if (!value) {
-        alert('Veuillez renseigner une adresse');
-        return;
-      }
-      answers[currentQ.id] = value;
+      // Validation sans perte des données
+  if (currentQ.type === 'address') {
+    const value = document.getElementById(`addr-input-${currentQ.id}`)?.value;
+    if (!value) {
+      alert('Veuillez renseigner une adresse');
+      return;
     }
+    answers[currentQ.id] = value;
+  }
     
     if (currentQ.id === 'accessType' && !answers.accessType) {
       alert('Veuillez sélectionner le type d\'accès');
