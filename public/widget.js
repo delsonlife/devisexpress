@@ -841,75 +841,75 @@
     container.innerHTML = `<div class="rw-error">${message}</div>`;
   }
 
-function setupWidget() {
-  container = document.getElementById('roof-widget');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'roof-widget';
-    container.className = 'rw-widget';
-    const target = document.getElementById('roof-widget-container') || document.body;
-    target.appendChild(container);
-  }
-  
-  // Structure fixe
-  container.innerHTML = '<div class="rw-wizard-body" id="rw-wizard-body"></div>';
-  
-  // Ajouter le panneau des prix UNE SEULE FOIS (en dehors des étapes)
-  const wizardBody = document.getElementById('rw-wizard-body');
-  wizardBody.innerHTML = `
-    <div class="rw-steps-area" id="rw-steps-area"></div>
-    <div class="rw-price-panel">
-      <div class="rw-price-label">Prix estimé</div>
-      <div class="rw-price-amount"><span id="price-total">38</span>€</div>
-      <div class="rw-price-sub">TTC · Estimation préliminaire</div>
-      <div class="rw-price-rows">
-        <div class="rw-price-row"><span>Base</span><span>38€</span></div>
-        <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
-        <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
-        <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Étages</span><span id="price-floor">0€</span></div>
-        <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
-        <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
+  function setupWidget() {
+    container = document.getElementById('roof-widget');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'roof-widget';
+      container.className = 'rw-widget';
+      const target = document.getElementById('roof-widget-container') || document.body;
+      target.appendChild(container);
+    }
+    
+    // Structure fixe
+    container.innerHTML = '<div class="rw-wizard-body" id="rw-wizard-body"></div>';
+    
+    // Ajouter le panneau des prix UNE SEULE FOIS
+    const wizardBody = document.getElementById('rw-wizard-body');
+    wizardBody.innerHTML = `
+      <div class="rw-steps-area" id="rw-steps-area"></div>
+      <div class="rw-price-panel">
+        <div class="rw-price-label">Prix estimé</div>
+        <div class="rw-price-amount"><span id="price-total">38</span>€</div>
+        <div class="rw-price-sub">TTC · Estimation préliminaire</div>
+        <div class="rw-price-rows">
+          <div class="rw-price-row"><span>Base</span><span>38€</span></div>
+          <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
+          <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
+          <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Étages</span><span id="price-floor">0€</span></div>
+          <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
+          <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
+        </div>
       </div>
-    </div>
-  `;
-  
-  answers = {};
-  currentQuestionIndex = 0;
-  distanceKm = 0;
-  itemQuantities = {};
-  
-  render();
-}
+    `;
+    
+    answers = {};
+    currentQuestionIndex = 0;
+    distanceKm = 0;
+    itemQuantities = {};
+    
+    render();
+  }
 
 // ============================================================
 // SECTION 5 : RENDU PRINCIPAL + RENDERQUESTION + RENDERFINALFORM
 // ============================================================
   function render() {
     if (currentQuestionIndex < questions.length) {
-      renderQuestion(container, questions[currentQuestionIndex], currentQuestionIndex, questions.length);
+      renderQuestion(questions[currentQuestionIndex], currentQuestionIndex, questions.length);
     } else {
       renderFinalForm();
     }
   }
 
-    function renderQuestion(container, question, index, total) {
-  const progress = ((index + 1) / total) * 100;
-  const isLastQuestion = (index + 1 === total);
-  
-  let html = `
-    <div class="rw-progress-container">
-      <div class="rw-progress-label">
-        <span>Étape ${index + 1} sur ${total}</span>
-        <span>${Math.round(progress)}%</span>
+  function renderQuestion(question, index, total) {
+    const progress = ((index + 1) / total) * 100;
+    const isLastQuestion = (index + 1 === total);
+    
+    let html = `
+      <div class="rw-progress-container">
+        <div class="rw-progress-label">
+          <span>Étape ${index + 1} sur ${total}</span>
+          <span>${Math.round(progress)}%</span>
+        </div>
+        <div class="rw-progress-bar">
+          <div class="rw-progress-fill" style="width: ${progress}%;"></div>
+        </div>
       </div>
-      <div class="rw-progress-bar">
-        <div class="rw-progress-fill" style="width: ${progress}%;"></div>
-      </div>
-    </div>
-    <div class="rw-step-panel active">
-      <div class="rw-step-title">${question.label}</div>
-      <div class="rw-step-desc">${question.placeholder || ''}</div>
-  `;
+      <div class="rw-step-panel active">
+        <div class="rw-step-title">${question.label}</div>
+        <div class="rw-step-desc">${question.placeholder || ''}</div>
+    `;
     
     switch(question.type) {
       case 'address':
@@ -934,7 +934,7 @@ function setupWidget() {
         `;
         break;
         
-            case 'select':
+      case 'select':
         if (question.id === 'accessType') {
           html += `
             <div class="rw-access-grid" id="access-grid">
@@ -1037,52 +1037,17 @@ function setupWidget() {
     const buttonClass = isLastQuestion ? 'rw-btn-submit' : 'rw-btn-next';
     
     html += `
-            <div class="rw-step-nav">
-              <button class="rw-btn-back" id="rw-prev" ${index === 0 ? 'disabled style="opacity:0.5"' : ''}>← Retour</button>
-              <button class="${buttonClass}" id="rw-next">${buttonText} →</button>
-            </div>
-          </div>
-        </div>
-
-        // Mettre à jour UNIQUEMENT la zone des questions
-  const stepsArea = document.getElementById('rw-steps-area');
-  if (stepsArea) {
-    stepsArea.innerHTML = html;
-  }
-  
-  // Attacher les événements
-  attachEvents(question);
-  
-  document.getElementById('rw-prev')?.addEventListener('click', prevStep);
-  document.getElementById('rw-next')?.addEventListener('click', () => {
-    if (isLastQuestion) {
-      submitForm();
-    } else {
-      nextStep();
-    }
-  });
-  
-  // Restaurer l'affichage des prix
-  updatePrice();
-}
-        
-        <div class="rw-price-panel">
-          <div class="rw-price-label">Prix estimé</div>
-          <div class="rw-price-amount"><span id="price-total">38</span>€</div>
-          <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
-          <div class="rw-price-rows">
-            <div class="rw-price-row"><span>Base</span><span>38€</span></div>
-            <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
-            <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
-            <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Étages</span><span id="price-floor">0€</span></div>
-            <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
-            <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
-          </div>
+        <div class="rw-step-nav">
+          <button class="rw-btn-back" id="rw-prev" ${index === 0 ? 'disabled style="opacity:0.5"' : ''}>← Retour</button>
+          <button class="${buttonClass}" id="rw-next">${buttonText} →</button>
         </div>
       </div>
     `;
     
-    container.innerHTML = html;
+    const stepsArea = document.getElementById('rw-steps-area');
+    if (stepsArea) {
+      stepsArea.innerHTML = html;
+    }
     
     attachEvents(question);
     
@@ -1094,6 +1059,8 @@ function setupWidget() {
         nextStep();
       }
     });
+    
+    updatePrice();
   }
 
   function renderFinalForm() {
@@ -1107,64 +1074,49 @@ function setupWidget() {
           <div class="rw-progress-fill" style="width: 100%;"></div>
         </div>
       </div>
-      <div class="rw-wizard-body">
-        <div class="rw-steps-area">
-          <div class="rw-step-panel active">
-            <div class="rw-step-title">Date et coordonnées</div>
-            <div class="rw-step-desc">Planifiez votre déménagement et recevez votre devis.</div>
-            
-            <div class="rw-recap" id="recap-box">
-              <div class="rw-recap-title">Récapitulatif</div>
-              <div class="rw-recap-pills" id="recap-pills"></div>
-            </div>
-            
-            <div class="rw-form-grid">
-              <div class="rw-form-row">
-                <label class="rw-form-label">📅 Date souhaitée</label>
-                <input id="input-date" type="date" class="rw-form-input">
-              </div>
-              <div class="rw-form-row">
-                <label class="rw-form-label">🕐 Heure</label>
-                <select id="input-time" class="rw-form-input">
-                  <option>08:00</option><option>09:00</option><option>10:00</option>
-                  <option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="rw-form-row">
-              <label class="rw-form-label">👤 Votre nom</label>
-              <input id="input-fullName" type="text" class="rw-form-input" placeholder="Jean Dupont">
-            </div>
-            <div class="rw-form-row">
-              <label class="rw-form-label">📱 Téléphone</label>
-              <input id="input-phone" type="tel" class="rw-form-input" placeholder="">
-            </div>
-            
-            <div class="rw-step-nav">
-              <button class="rw-btn-back" id="rw-prev-final">← Retour</button>
-              <button class="rw-btn-submit" id="rw-submit-final">Envoyer ma demande →</button>
-            </div>
+      <div class="rw-step-panel active">
+        <div class="rw-step-title">Date et coordonnées</div>
+        <div class="rw-step-desc">Planifiez votre déménagement et recevez votre devis.</div>
+        
+        <div class="rw-recap" id="recap-box">
+          <div class="rw-recap-title">Récapitulatif</div>
+          <div class="rw-recap-pills" id="recap-pills"></div>
+        </div>
+        
+        <div class="rw-form-grid">
+          <div class="rw-form-row">
+            <label class="rw-form-label">📅 Date souhaitée</label>
+            <input id="input-date" type="date" class="rw-form-input">
+          </div>
+          <div class="rw-form-row">
+            <label class="rw-form-label">🕐 Heure</label>
+            <select id="input-time" class="rw-form-input">
+              <option>08:00</option><option>09:00</option><option>10:00</option>
+              <option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option>
+            </select>
           </div>
         </div>
         
-        <div class="rw-price-panel">
-          <div class="rw-price-label">Prix estimé</div>
-          <div class="rw-price-amount"><span id="price-total-final">38</span>€</div>
-          <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
-          <div class="rw-price-rows">
-            <div class="rw-price-row"><span>Base</span><span>38€</span></div>
-            <div class="rw-price-row" id="price-row-dist-final"><span>Distance</span><span id="price-dist-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-items-final"><span>Objets</span><span id="price-items-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-floor-final" style="display:none"><span>Étages</span><span id="price-floor-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-movers-final" style="display:none"><span>Déménageurs</span><span id="price-movers-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-urgent-final" style="display:none"><span>Urgent +20%</span><span id="price-urgent-final">0€</span></div>
-          </div>
+        <div class="rw-form-row">
+          <label class="rw-form-label">👤 Votre nom</label>
+          <input id="input-fullName" type="text" class="rw-form-input" placeholder="Jean Dupont">
+        </div>
+        <div class="rw-form-row">
+          <label class="rw-form-label">📱 Téléphone</label>
+          <input id="input-phone" type="tel" class="rw-form-input" placeholder="">
+        </div>
+        
+        <div class="rw-step-nav">
+          <button class="rw-btn-back" id="rw-prev-final">← Retour</button>
+          <button class="rw-btn-submit" id="rw-submit-final">Envoyer ma demande →</button>
         </div>
       </div>
     `;
     
-    container.innerHTML = html;
+    const stepsArea = document.getElementById('rw-steps-area');
+    if (stepsArea) {
+      stepsArea.innerHTML = html;
+    }
     
     const today = new Date();
     today.setDate(today.getDate() + 7);
@@ -1288,11 +1240,10 @@ function setupWidget() {
   let suggestionsData = {};
 
   function attachEvents(question) {
-          if (question.type === 'address') {
+    if (question.type === 'address') {
       const input = document.getElementById(`addr-input-${question.id}`);
       const suggestBox = document.getElementById(`suggest-${question.id}`);
       
-      // Restaurer la valeur sauvegardée
       if (answers[question.id]) {
         input.value = answers[question.id];
       }
@@ -1346,7 +1297,6 @@ function setupWidget() {
                   if (addressCoords.departureAddress && addressCoords.arrivalAddress) {
                     calculateDistance();
                   }
-                  // Mettre à jour le prix immédiatement
                   updatePrice();
                 });
               });
@@ -1616,18 +1566,13 @@ function setupWidget() {
     if (fillEl) fillEl.style.width = `${pct}%`;
   }
 
- // ============================================================
-// SECTION 8 : DISTANCE (calcul vol d'oiseau avec log)
+// ============================================================
+// SECTION 8 : DISTANCE (calcul vol d'oiseau)
 // ============================================================
   async function calculateDistance() {
     const dep = addressCoords.departureAddress;
     const arr = addressCoords.arrivalAddress;
-    if (!dep || !arr) {
-      console.log('Adresses manquantes');
-      return;
-    }
-    
-    console.log('Calcul distance entre:', dep.lat, dep.lon, 'et', arr.lat, arr.lon);
+    if (!dep || !arr) return;
     
     const badge = document.getElementById('dist-badge');
     if (!badge) return;
@@ -1640,7 +1585,6 @@ function setupWidget() {
     distIcon.textContent = '⏳';
     distText.textContent = 'Calcul de la distance…';
     
-    // Formule de Haversine
     const R = 6371;
     const lat1 = dep.lat * Math.PI / 180;
     const lat2 = arr.lat * Math.PI / 180;
@@ -1654,52 +1598,43 @@ function setupWidget() {
     const distance = R * c;
     
     distanceKm = Math.round(distance);
-    console.log('Distance calculée:', distanceKm, 'km');
     
     badge.className = 'rw-dist-badge';
     distIcon.textContent = '📏';
     distText.textContent = `Distance estimée : ${distanceKm} km`;
     
-    // Mettre à jour l'affichage du prix
     updatePrice();
   }
+
 // ============================================================
 // SECTION 9 : MISE À JOUR PRIX
 // ============================================================
   function updatePrice() {
     let total = 38;
     
-    // 1. Distance
+    // Distance
     const distPrice = distanceKm;
     total += distPrice;
     
-    // Mettre à jour l'affichage de la distance
     const priceDist = document.getElementById('price-dist');
     if (priceDist) {
       priceDist.textContent = `${distPrice}€`;
       const distRow = document.getElementById('price-row-dist');
-      if (distRow) {
-        if (distanceKm > 0) {
-          distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
-        } else {
-          distRow.querySelector('span:first-child').textContent = `Distance`;
-        }
+      if (distRow && distanceKm > 0) {
+        distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
       }
     }
     
-    // 2. Objets
+    // Objets
     let itemsPrice = 0;
     for (const item of itemsList) {
       itemsPrice += (itemQuantities[item.id] || 0) * item.price;
     }
     total += itemsPrice;
-    
     const priceItems = document.getElementById('price-items');
-    if (priceItems) {
-      priceItems.textContent = `${itemsPrice}€`;
-    }
+    if (priceItems) priceItems.textContent = `${itemsPrice}€`;
     
-    // 3. Étages (uniquement si Montée en étage)
+    // Étages
     let floorPrice = 0;
     if (answers.accessType === 'Montée en étage') {
       if (!answers.elevatorDepart && answers.floorDepart > 0) {
@@ -1710,7 +1645,6 @@ function setupWidget() {
       }
     }
     total += floorPrice;
-    
     const rowFloor = document.getElementById('price-row-floor');
     const priceFloor = document.getElementById('price-floor');
     if (rowFloor && priceFloor) {
@@ -1722,12 +1656,11 @@ function setupWidget() {
       }
     }
     
-    // 4. Déménageurs
+    // Déménageurs
     let moversPrice = 0;
     if (answers.movers === '2 déménageurs') moversPrice = 20;
     if (answers.movers === '3 déménageurs') moversPrice = 40;
     total += moversPrice;
-    
     const rowMovers = document.getElementById('price-row-movers');
     const priceMovers = document.getElementById('price-movers');
     if (rowMovers && priceMovers) {
@@ -1739,14 +1672,13 @@ function setupWidget() {
       }
     }
     
-    // 5. Urgent
+    // Urgent
     let urgentPrice = 0;
     let totalBeforeUrgent = total;
     if (answers.urgent) {
       urgentPrice = Math.round(totalBeforeUrgent * 0.2);
       total = totalBeforeUrgent + urgentPrice;
     }
-    
     const rowUrgent = document.getElementById('price-row-urgent');
     const priceUrgent = document.getElementById('price-urgent');
     if (rowUrgent && priceUrgent) {
@@ -1758,23 +1690,17 @@ function setupWidget() {
       }
     }
     
-    // 6. Total final
     const totalEl = document.getElementById('price-total');
-    if (totalEl) {
-      totalEl.textContent = Math.round(total);
-    }
+    if (totalEl) totalEl.textContent = Math.round(total);
     
-    // 7. Mettre à jour le panneau final s'il existe
+    // Panneau final
     const totalFinal = document.getElementById('price-total-final');
     if (totalFinal) {
       totalFinal.textContent = Math.round(total);
-      
       const priceDistFinal = document.getElementById('price-dist-final');
       if (priceDistFinal) priceDistFinal.textContent = `${distPrice}€`;
-      
       const priceItemsFinal = document.getElementById('price-items-final');
       if (priceItemsFinal) priceItemsFinal.textContent = `${itemsPrice}€`;
-      
       const priceFloorFinal = document.getElementById('price-floor-final');
       if (priceFloorFinal) {
         if (floorPrice > 0) {
@@ -1784,7 +1710,6 @@ function setupWidget() {
           document.getElementById('price-row-floor-final').style.display = 'none';
         }
       }
-      
       const priceMoversFinal = document.getElementById('price-movers-final');
       if (priceMoversFinal) {
         if (moversPrice > 0) {
@@ -1794,7 +1719,6 @@ function setupWidget() {
           document.getElementById('price-row-movers-final').style.display = 'none';
         }
       }
-      
       const priceUrgentFinal = document.getElementById('price-urgent-final');
       if (priceUrgentFinal) {
         if (urgentPrice > 0) {
@@ -1805,18 +1729,6 @@ function setupWidget() {
         }
       }
     }
-    
-    // 8. Mettre à jour le récapitulatif si le formulaire final est affiché
-    const recapPills = document.getElementById('recap-pills');
-    if (recapPills) {
-      const pills = [];
-      if (answers.departureAddress) pills.push(`📍 ${answers.departureAddress.split(',')[0]}`);
-      if (answers.arrivalAddress) pills.push(`🏠 ${answers.arrivalAddress.split(',')[0]}`);
-      if (distanceKm > 0) pills.push(`📏 ${distanceKm} km`);
-      const itemCount = Object.values(itemQuantities).reduce((s, q) => s + q, 0);
-      if (itemCount > 0) pills.push(`📦 ${itemCount} objet(s)`);
-      recapPills.innerHTML = pills.map(p => `<span class="rw-recap-pill">${p}</span>`).join('');
-    }
   }
 
 // ============================================================
@@ -1825,15 +1737,14 @@ function setupWidget() {
   function nextStep() {
     const currentQ = questions[currentQuestionIndex];
     
-      // Validation sans perte des données
-  if (currentQ.type === 'address') {
-    const value = document.getElementById(`addr-input-${currentQ.id}`)?.value;
-    if (!value) {
-      alert('Veuillez renseigner une adresse');
-      return;
+    if (currentQ.type === 'address') {
+      const value = document.getElementById(`addr-input-${currentQ.id}`)?.value;
+      if (!value) {
+        alert('Veuillez renseigner une adresse');
+        return;
+      }
+      answers[currentQ.id] = value;
     }
-    answers[currentQ.id] = value;
-  }
     
     if (currentQ.id === 'accessType' && !answers.accessType) {
       alert('Veuillez sélectionner le type d\'accès');
@@ -1906,7 +1817,7 @@ function setupWidget() {
           <div class="rw-success-title">Demande envoyée !</div>
           <p class="rw-success-sub">Un conseiller vous rappelle <strong>sous 2 heures</strong> au numéro indiqué.</p>
           <div class="rw-success-price-box">Devis estimatif : ${quoteResult.lowEstimate}€ - ${quoteResult.highEstimate}€ TTC</div>
-          <button class="rw-price-btn" onclick="location.reload()">Nouvelle estimation</button>
+          <button class="rw-btn-submit" onclick="location.reload()">Nouvelle estimation</button>
         </div>
       `;
     } catch (error) {
