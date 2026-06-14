@@ -3,7 +3,7 @@ export default {
     // Base
     let total = pricing.basePrice || 38;
     
-    // ⚡ CORRECTION : Distance (1€/km)
+    // Distance (1€/km)
     const distanceKm = answers.distanceKm || 0;
     const distancePrice = distanceKm * (pricing.pricePerKm || 1);
     total += distancePrice;
@@ -42,7 +42,7 @@ export default {
     if (answers.movers === '3 déménageurs') moversTotal = 40;
     total += moversTotal;
     
-    // Urgent
+    // Urgent (+20%)
     let urgentTotal = 0;
     let finalTotal = total;
     if (answers.urgent === true) {
@@ -56,6 +56,8 @@ export default {
     
     const lowEstimate = Math.round(finalTotal * marginLow);
     const highEstimate = Math.round(finalTotal * marginHigh);
+    
+    console.log('Calcul moving_v1:', { distanceKm, distancePrice, itemsTotal, floorTotal, moversTotal, urgentTotal, finalTotal, lowEstimate, highEstimate });
     
     return {
       lowEstimate,
