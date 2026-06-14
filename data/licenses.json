@@ -177,7 +177,7 @@
       "margin_high": 1.18
     }
   },
- "MOVING001": {
+"MOVING001": {
   "active": true,
   "company": {
     "name": "TransitPro",
@@ -220,20 +220,6 @@
       "required": true
     },
     {
-      "id": "floorDepart",
-      "type": "floor",
-      "label": "Étage de départ",
-      "hasElevator": true,
-      "required": false
-    },
-    {
-      "id": "floorArrival",
-      "type": "floor",
-      "label": "Étage d'arrivée",
-      "hasElevator": true,
-      "required": false
-    },
-    {
       "id": "urgent",
       "type": "checkbox",
       "label": "Transport urgent (+20%)",
@@ -270,7 +256,7 @@
       "id": "phone",
       "type": "tel",
       "label": "Téléphone",
-      "placeholder": "06 12 34 56 78",
+      "placeholder": "",
       "required": true
     }
   ],
