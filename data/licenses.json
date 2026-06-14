@@ -176,5 +176,73 @@
       "margin_low": 0.92,
       "margin_high": 1.18
     }
+  },
+  "MOVING001": {
+    "active": true,
+    "company": {
+      "name": "Déménagement Lyon Express",
+      "domain": "demenagement-lyon.fr",
+      "email": "contact@demenagement-lyon.fr"
+    },
+    "allowedOrigins": ["https://demenagement-lyon.fr"],
+    "branding": {
+      "primaryColor": "#1e30d4"
+    },
+    "trade": "moving",
+    "calculator": "moving_v1",
+    "questions": [
+      {
+        "id": "departureAddress",
+        "type": "text",
+        "label": "Adresse de départ",
+        "placeholder": "15 rue Victor Hugo, 69001 Lyon",
+        "required": true
+      },
+      {
+        "id": "arrivalAddress",
+        "type": "text",
+        "label": "Adresse d'arrivée",
+        "placeholder": "8 avenue des Champs-Élysées, 75008 Paris",
+        "required": true
+      },
+      {
+        "id": "volume",
+        "type": "slider",
+        "label": "Volume estimé (m³)",
+        "min": 10,
+        "max": 200,
+        "step": 5,
+        "unit": "m³",
+        "required": true
+      },
+      {
+        "id": "floor",
+        "type": "number",
+        "label": "Nombre d'étages (sans ascenseur)",
+        "min": 0,
+        "max": 10,
+        "required": true
+      },
+      {
+        "id": "distanceFallback",
+        "type": "select",
+        "label": "Distance approximative (si adresse non reconnue)",
+        "options": [
+          "Moins de 50 km",
+          "50 à 200 km",
+          "Plus de 200 km"
+        ],
+        "required": false
+      }
+    ],
+    "pricing": {
+      "moving": {
+        "pricePerM3": 38,
+        "floorSurcharge": 15,
+        "pricePerKm": 1
+      },
+      "margin_low": 0.92,
+      "margin_high": 1.18
+    }
   }
 }
