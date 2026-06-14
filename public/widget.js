@@ -912,7 +912,7 @@
         `;
         break;
         
-      case 'select':
+            case 'select':
         if (question.id === 'accessType') {
           html += `
             <div class="rw-access-grid" id="access-grid">
