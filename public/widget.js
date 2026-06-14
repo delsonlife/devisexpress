@@ -1796,35 +1796,40 @@
     calculateQuote();
   }
   
-  async function calculateQuote() {
-    const pricePanel = document.querySelector('.rw-price-panel');
-    if (pricePanel) pricePanel.style.opacity = '0.5';
+    async function calculateQuote() {
+  const pricePanel = document.querySelector('.rw-price-panel');
+  if (pricePanel) pricePanel.style.opacity = '0.5';
+  
+  try {
+    const response = await fetch(`${API_BASE}/api/calculate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Origin': window.location.origin },
+      body: JSON.stringify({ license: LICENSE_KEY, answers, domain: window.location.hostname })
+    });
     
-    try {
-      const response = await fetch(`${API_BASE}/api/calculate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Origin': window.location.origin },
-        body: JSON.stringify({ license: LICENSE_KEY, answers, domain: window.location.hostname })
-      });
-      
-      if (!response.ok) throw new Error('Erreur calcul');
-      
-      quoteResult = await response.json();
-      
-      container.innerHTML = `
-        <div class="rw-success-state show">
-          <div class="rw-success-icon">🎉</div>
-          <div class="rw-success-title">Demande envoyée !</div>
-          <p class="rw-success-sub">Un conseiller vous rappelle <strong>sous 2 heures</strong> au numéro indiqué.</p>
-          <div class="rw-success-price-box">Devis estimatif : ${quoteResult.lowEstimate}€ - ${quoteResult.highEstimate}€ TTC</div>
-          <button class="rw-btn-submit" onclick="location.reload()">Nouvelle estimation</button>
+    if (!response.ok) throw new Error('Erreur calcul');
+    
+    quoteResult = await response.json();
+    
+    // Réinitialiser l'affichage complet
+    container.innerHTML = `
+      <div class="rw-success-state show" style="text-align: center; padding: 2rem;">
+        <div class="rw-success-icon" style="font-size: 3rem;">🎉</div>
+        <div class="rw-success-title" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Demande envoyée !</div>
+        <p class="rw-success-sub" style="margin-bottom: 1rem;">Un conseiller vous rappelle <strong>sous 2 heures</strong> au numéro indiqué.</p>
+        <div class="rw-success-price-box" style="background: #f0f4ff; border-radius: 0.75rem; padding: 0.75rem 1.5rem; display: inline-block; margin-bottom: 1.5rem;">
+          Devis estimatif : ${quoteResult.lowEstimate}€ - ${quoteResult.highEstimate}€ TTC
         </div>
-      `;
-    } catch (error) {
-      alert('Erreur lors du calcul');
-      if (pricePanel) pricePanel.style.opacity = '1';
-    }
+        <div style="text-align: center; width: 100%;">
+          <button class="rw-btn-submit" style="display: inline-block; margin: 0 auto; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #111750; border: none; border-radius: 0.625rem; padding: 0.75rem 1.5rem; font-weight: 700; cursor: pointer;" style="display:block; margin:0 auto; text-align:center;">Nouvelle estimation</button>
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    alert('Erreur lors du calcul');
+    if (pricePanel) pricePanel.style.opacity = '1';
   }
+}
 
 // ============================================================
 // SECTION 11 : DÉMARRAGE
