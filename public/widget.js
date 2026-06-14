@@ -927,8 +927,8 @@
     if (currentQuestionIndex < questions.length) {
       renderQuestion(container, questions[currentQuestionIndex], currentQuestionIndex, questions.length);
     } else {
-      // Fin du questionnaire, afficher le prix
-      calculateQuote();
+      // Fin du questionnaire, afficher le formulaire final
+      renderFinalForm();
     }
   }
 
@@ -1071,7 +1071,7 @@
         
       case 'text':
       case 'tel':
-        html += `<input type="${question.type}" id="input-${question.id}" class="rw-form-input" placeholder="${question.placeholder}">`;
+        html += `<input type="${question.type}" id="input-${question.id}" class="rw-form-input" placeholder="">`;
         break;
     }
     
@@ -1094,17 +1094,15 @@
           <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
           <div class="rw-price-rows">
             <div class="rw-price-row"><span>Base</span><span>38€</span></div>
-            <div class="rw-price-row" id="price-row-dist"><span>Distance (—)</span><span id="price-dist">0€</span></div>
+            <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
             <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
             <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Étages</span><span id="price-floor">0€</span></div>
-            <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs sup.</span><span id="price-movers">0€</span></div>
-            <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>⚡ Urgent +20%</span><span id="price-urgent">0€</span></div>
+            <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
+            <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
           </div>
-          <button class="rw-price-btn" onclick="document.getElementById('estimateur')?.scrollIntoView({behavior:'smooth'})">Obtenir mon devis gratuit</button>
           <div class="rw-price-reassure">
-            <div class="rw-price-reassure-item">🛡️ Assuré AXA & Allianz</div>
             <div class="rw-price-reassure-item">✅ Prix fixe, aucun frais caché</div>
-            <div class="rw-price-reassure-item" id="dist-mode-label">📏 Distance : calcul routier réel</div>
+            <div class="rw-price-reassure-item">📞 Rappel sous 2 heures</div>
           </div>
         </div>
       </div>
@@ -1123,6 +1121,204 @@
         nextStep();
       }
     });
+  }
+
+  function renderFinalForm() {
+    const html = `
+      <div class="rw-progress-container">
+        <div class="rw-progress-label">
+          <span>Dernière étape</span>
+          <span>100%</span>
+        </div>
+        <div class="rw-progress-bar">
+          <div class="rw-progress-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+      <div class="rw-wizard-body">
+        <div class="rw-steps-area">
+          <div class="rw-step-panel active">
+            <div class="rw-step-title">Date et coordonnées</div>
+            <div class="rw-step-desc">Planifiez votre déménagement et recevez votre devis.</div>
+            
+            <div class="rw-recap" id="recap-box">
+              <div class="rw-recap-title">Récapitulatif</div>
+              <div class="rw-recap-pills" id="recap-pills"></div>
+            </div>
+            
+            <div class="rw-form-grid">
+              <div class="rw-form-row">
+                <label class="rw-form-label">📅 Date souhaitée</label>
+                <input id="input-date" type="date" class="rw-form-input">
+              </div>
+              <div class="rw-form-row">
+                <label class="rw-form-label">🕐 Heure</label>
+                <select id="input-time" class="rw-form-input">
+                  <option>08:00</option><option>09:00</option><option>10:00</option>
+                  <option>11:00</option><option>14:00</option><option>15:00</option><option>16:00</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="rw-form-row">
+              <label class="rw-form-label">👤 Votre nom</label>
+              <input id="input-fullName" type="text" class="rw-form-input" placeholder="Jean Dupont">
+            </div>
+            <div class="rw-form-row">
+              <label class="rw-form-label">📱 Téléphone</label>
+              <input id="input-phone" type="tel" class="rw-form-input" placeholder="">
+            </div>
+            
+            <div class="rw-step-nav">
+              <button class="rw-btn-back" id="rw-prev-final">← Retour</button>
+              <button class="rw-btn-submit" id="rw-submit-final">Envoyer ma demande →</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Price Panel -->
+        <div class="rw-price-panel">
+          <div class="rw-price-label">Prix estimé</div>
+          <div class="rw-price-amount"><span id="price-total-final">38</span>€</div>
+          <div class="rw-price-sub">TTC · Prix fixe, sans surprise</div>
+          <div class="rw-price-rows">
+            <div class="rw-price-row"><span>Base</span><span>38€</span></div>
+            <div class="rw-price-row" id="price-row-dist-final"><span>Distance</span><span id="price-dist-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-items-final"><span>Objets</span><span id="price-items-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-floor-final" style="display:none"><span>Étages</span><span id="price-floor-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-movers-final" style="display:none"><span>Déménageurs</span><span id="price-movers-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-urgent-final" style="display:none"><span>Urgent +20%</span><span id="price-urgent-final">0€</span></div>
+          </div>
+          <div class="rw-price-reassure">
+            <div class="rw-price-reassure-item">✅ Prix fixe, aucun frais caché</div>
+            <div class="rw-price-reassure-item">📞 Rappel sous 2 heures</div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // Initialiser la date par défaut
+    const today = new Date();
+    today.setDate(today.getDate() + 7);
+    const dateInput = document.getElementById('input-date');
+    if (dateInput) dateInput.value = today.toISOString().split('T')[0];
+    
+    // Mettre à jour le récapitulatif et le prix
+    updateRecapAndPrice();
+    
+    document.getElementById('rw-prev-final')?.addEventListener('click', () => {
+      currentQuestionIndex = questions.length - 1;
+      render();
+    });
+    
+    document.getElementById('rw-submit-final')?.addEventListener('click', () => {
+      const name = document.getElementById('input-fullName')?.value;
+      const phone = document.getElementById('input-phone')?.value;
+      const date = document.getElementById('input-date')?.value;
+      const time = document.getElementById('input-time')?.value;
+      
+      if (!name || !phone) {
+        alert('Veuillez renseigner votre nom et téléphone');
+        return;
+      }
+      
+      answers.fullName = name;
+      answers.phone = phone;
+      answers.date = date;
+      answers.time = time;
+      answers.distanceKm = distanceKm;
+      answers.items = Object.keys(itemQuantities).filter(id => itemQuantities[id] > 0);
+      answers.itemQuantities = { ...itemQuantities };
+      
+      calculateQuote();
+    });
+  }
+
+  function updateRecapAndPrice() {
+    // Récapitulatif
+    const recapPills = document.getElementById('recap-pills');
+    if (recapPills) {
+      const pills = [];
+      if (answers.departureAddress) pills.push(`📍 ${answers.departureAddress.split(',')[0]}`);
+      if (answers.arrivalAddress) pills.push(`🏠 ${answers.arrivalAddress.split(',')[0]}`);
+      if (distanceKm) pills.push(`📏 ${distanceKm} km`);
+      
+      const itemCount = Object.values(itemQuantities).reduce((s, q) => s + q, 0);
+      if (itemCount > 0) pills.push(`📦 ${itemCount} objet(s)`);
+      
+      recapPills.innerHTML = pills.map(p => `<span class="rw-recap-pill">${p}</span>`).join('');
+    }
+    
+    // Prix
+    updatePriceFinal();
+  }
+
+  function updatePriceFinal() {
+    let total = 38;
+    
+    const distPrice = distanceKm;
+    total += distPrice;
+    const priceDist = document.getElementById('price-dist-final');
+    if (priceDist) priceDist.textContent = `${distPrice}€`;
+    
+    let itemsPrice = 0;
+    for (const item of itemsList) {
+      itemsPrice += (itemQuantities[item.id] || 0) * item.price;
+    }
+    total += itemsPrice;
+    const priceItems = document.getElementById('price-items-final');
+    if (priceItems) priceItems.textContent = `${itemsPrice}€`;
+    
+    let floorPrice = 0;
+    if (answers.accessType === 'Montée en étage') {
+      const floorDepart = answers.floorDepart || 0;
+      const floorArrival = answers.floorArrival || 0;
+      const elevatorDepart = answers.elevatorDepart !== false;
+      const elevatorArrival = answers.elevatorArrival !== false;
+      
+      if (!elevatorDepart && floorDepart > 0) floorPrice += floorDepart * 8;
+      if (!elevatorArrival && floorArrival > 0) floorPrice += floorArrival * 8;
+    }
+    total += floorPrice;
+    const rowFloor = document.getElementById('price-row-floor-final');
+    const priceFloor = document.getElementById('price-floor-final');
+    if (floorPrice > 0) {
+      rowFloor.style.display = '';
+      priceFloor.textContent = `${floorPrice}€`;
+    } else {
+      rowFloor.style.display = 'none';
+    }
+    
+    let moversPrice = 0;
+    if (answers.movers === '2 déménageurs') moversPrice = 20;
+    if (answers.movers === '3 déménageurs') moversPrice = 40;
+    total += moversPrice;
+    const rowMovers = document.getElementById('price-row-movers-final');
+    const priceMovers = document.getElementById('price-movers-final');
+    if (moversPrice > 0) {
+      rowMovers.style.display = '';
+      priceMovers.textContent = `${moversPrice}€`;
+    } else {
+      rowMovers.style.display = 'none';
+    }
+    
+    let urgentPrice = 0;
+    if (answers.urgent) {
+      urgentPrice = Math.round(total * 0.2);
+      total = total * 1.2;
+    }
+    const rowUrgent = document.getElementById('price-row-urgent-final');
+    const priceUrgent = document.getElementById('price-urgent-final');
+    if (urgentPrice > 0) {
+      rowUrgent.style.display = '';
+      priceUrgent.textContent = `${urgentPrice}€`;
+    } else {
+      rowUrgent.style.display = 'none';
+    }
+    
+    const totalEl = document.getElementById('price-total-final');
+    if (totalEl) totalEl.textContent = Math.round(total);
   }
 
 // ============================================================
@@ -1193,7 +1389,7 @@
       });
       
       document.addEventListener('click', (e) => {
-        if (!suggestBox.contains(e.target) && e.target !== input) {
+        if (suggestBox && !suggestBox.contains(e.target) && e.target !== input) {
           suggestBox.classList.remove('open');
         }
       });
@@ -1204,7 +1400,16 @@
     }
     
     if (question.id === 'accessType') {
+      if (!answers.accessType) {
+        answers.accessType = 'Trottoir à trottoir';
+      }
+      
       document.querySelectorAll('.rw-access-card').forEach(card => {
+        const cardValue = card.dataset.value;
+        if (cardValue === answers.accessType) {
+          card.classList.add('selected');
+        }
+        
         card.addEventListener('click', () => {
           const value = card.dataset.value;
           answers.accessType = value;
@@ -1216,16 +1421,24 @@
             floorSection.style.display = 'block';
           } else {
             floorSection.style.display = 'none';
-            answers.floorDepart = null;
-            answers.floorArrival = null;
-            answers.elevatorDepart = null;
-            answers.elevatorArrival = null;
+            answers.floorDepart = 0;
+            answers.floorArrival = 0;
+            answers.elevatorDepart = true;
+            answers.elevatorArrival = true;
+            const floorDepartVal = document.getElementById('floor-depart-val');
+            const floorArrivalVal = document.getElementById('floor-arrival-val');
+            if (floorDepartVal) floorDepartVal.textContent = '0';
+            if (floorArrivalVal) floorArrivalVal.textContent = '0';
           }
           updatePrice();
         });
       });
       
-      // Gestion des étages
+      const floorSectionEl = document.getElementById('floor-section');
+      if (floorSectionEl && answers.accessType === 'Montée en étage') {
+        floorSectionEl.style.display = 'block';
+      }
+      
       document.querySelectorAll('.rw-qty-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const side = btn.dataset.side;
@@ -1233,17 +1446,25 @@
           const current = answers[`floor${side === 'depart' ? 'Depart' : 'Arrival'}`] || 0;
           const newVal = Math.max(0, current + delta);
           answers[`floor${side === 'depart' ? 'Depart' : 'Arrival'}`] = newVal;
-          document.getElementById(`floor-${side}-val`).textContent = newVal;
+          const valEl = document.getElementById(`floor-${side}-val`);
+          if (valEl) valEl.textContent = newVal;
           updatePrice();
         });
       });
       
       document.querySelectorAll('.rw-toggle-pill').forEach(pill => {
+        const side = pill.dataset.side;
+        const asc = pill.dataset.asc === 'true';
+        if (answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] === undefined) {
+          answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] = true;
+        }
+        if (answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] === asc) {
+          pill.classList.add('on');
+        }
+        
         pill.addEventListener('click', () => {
-          const side = pill.dataset.side;
-          const asc = pill.dataset.asc === 'true';
-          answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] = asc;
-          
+          const newAsc = pill.dataset.asc === 'true';
+          answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] = newAsc;
           const container = pill.parentElement;
           container.querySelectorAll('.rw-toggle-pill').forEach(p => p.classList.remove('on'));
           pill.classList.add('on');
@@ -1253,7 +1474,16 @@
     }
     
     if (question.id === 'movers') {
+      if (!answers.movers) {
+        answers.movers = '1 déménageur';
+      }
+      
       document.querySelectorAll('.rw-mover-card').forEach(card => {
+        const cardValue = card.dataset.value;
+        if (cardValue === answers.movers) {
+          card.classList.add('selected');
+        }
+        
         card.addEventListener('click', () => {
           const value = card.dataset.value;
           answers.movers = value;
@@ -1267,6 +1497,10 @@
     if (question.id === 'urgent') {
       const urgentBox = document.getElementById('urgent-box');
       const urgentChk = document.getElementById('urgent-chk');
+      if (answers.urgent) {
+        urgentChk.checked = true;
+        urgentBox.classList.add('selected');
+      }
       urgentBox.addEventListener('click', () => {
         urgentChk.checked = !urgentChk.checked;
         urgentBox.classList.toggle('selected', urgentChk.checked);
@@ -1313,6 +1547,10 @@
   
   let itemQuantities = {};
   
+  function getSelectedItemsCount() {
+    return Object.values(itemQuantities).reduce((sum, qty) => sum + qty, 0);
+  }
+  
   function renderItemsGrid() {
     const grid = document.getElementById('item-grid');
     if (!grid) return;
@@ -1338,7 +1576,8 @@
         const current = itemQuantities[id] || 0;
         const newVal = Math.max(0, current + delta);
         itemQuantities[id] = newVal;
-        document.getElementById(`qty-${id}`).textContent = newVal;
+        const qtyEl = document.getElementById(`qty-${id}`);
+        if (qtyEl) qtyEl.textContent = newVal;
         
         const card = btn.closest('.rw-item-card');
         if (newVal > 0) {
@@ -1359,7 +1598,8 @@
         const current = itemQuantities[id] || 0;
         const newVal = current + 1;
         itemQuantities[id] = newVal;
-        document.getElementById(`qty-${id}`).textContent = newVal;
+        const qtyEl = document.getElementById(`qty-${id}`);
+        if (qtyEl) qtyEl.textContent = newVal;
         card.classList.add('selected');
         updateTruckFill();
         updatePrice();
@@ -1378,14 +1618,6 @@
     if (pctEl) pctEl.textContent = `${pct}%`;
     if (fillEl) fillEl.style.width = `${pct}%`;
   }
-  
-  function calculateItemsPrice() {
-    let total = 0;
-    for (const item of itemsList) {
-      total += (itemQuantities[item.id] || 0) * item.price;
-    }
-    return total;
-  }
 
 // ============================================================
 // SECTION 8 : DISTANCE OPENROUTESERVICE
@@ -1398,6 +1630,8 @@
     if (!dep || !arr) return;
     
     const badge = document.getElementById('dist-badge');
+    if (!badge) return;
+    
     const distIcon = document.getElementById('dist-icon');
     const distText = document.getElementById('dist-text');
     
@@ -1427,15 +1661,12 @@
       badge.className = 'rw-dist-badge';
       distIcon.textContent = '📏';
       distText.textContent = `Distance routière réelle : ${distanceKm} km`;
-      document.getElementById('dist-mode-label').textContent = `📏 Distance : ${distanceKm} km (route)`;
       
       updatePrice();
     } catch (err) {
-      console.warn('ORS fallback', err);
-      badge.className = 'rw-dist-badge error';
-      distIcon.textContent = '⚠️';
-      distText.textContent = `Distance estimée approximative`;
-      distanceKm = Math.round(Math.sqrt(Math.pow((dep.lon - arr.lon) * 111, 2) + Math.pow((dep.lat - arr.lat) * 111, 2)));
+      console.warn('ORS failed', err);
+      badge.style.display = 'none';
+      distanceKm = 0;
       updatePrice();
     }
   }
@@ -1444,35 +1675,33 @@
 // SECTION 9 : MISE À JOUR PRIX
 // ============================================================
   function updatePrice() {
-    let total = 38; // base
+    let total = 38;
     
     // Distance
     const distPrice = distanceKm;
     total += distPrice;
-    const rowDist = document.getElementById('price-row-dist');
     const priceDist = document.getElementById('price-dist');
-    if (rowDist && priceDist) {
-      rowDist.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
-      priceDist.textContent = `${distPrice}€`;
-    }
+    if (priceDist) priceDist.textContent = `${distPrice}€`;
     
     // Objets
-    const itemsPrice = calculateItemsPrice();
+    let itemsPrice = 0;
+    for (const item of itemsList) {
+      itemsPrice += (itemQuantities[item.id] || 0) * item.price;
+    }
     total += itemsPrice;
     const priceItems = document.getElementById('price-items');
     if (priceItems) priceItems.textContent = `${itemsPrice}€`;
     
     // Étages
     let floorPrice = 0;
-    const floorSurcharge = 8;
     if (answers.accessType === 'Montée en étage') {
       const floorDepart = answers.floorDepart || 0;
       const floorArrival = answers.floorArrival || 0;
       const elevatorDepart = answers.elevatorDepart !== false;
       const elevatorArrival = answers.elevatorArrival !== false;
       
-      if (!elevatorDepart && floorDepart > 0) floorPrice += floorDepart * floorSurcharge;
-      if (!elevatorArrival && floorArrival > 0) floorPrice += floorArrival * floorSurcharge;
+      if (!elevatorDepart && floorDepart > 0) floorPrice += floorDepart * 8;
+      if (!elevatorArrival && floorArrival > 0) floorPrice += floorArrival * 8;
     }
     total += floorPrice;
     const rowFloor = document.getElementById('price-row-floor');
@@ -1513,7 +1742,8 @@
       rowUrgent.style.display = 'none';
     }
     
-    document.getElementById('price-total').textContent = Math.round(total);
+    const totalEl = document.getElementById('price-total');
+    if (totalEl) totalEl.textContent = Math.round(total);
   }
 
 // ============================================================
@@ -1542,6 +1772,17 @@
       return;
     }
     
+    // Validation : au moins un objet sélectionné
+    if (currentQ.type === 'multiselect') {
+      const selectedCount = getSelectedItemsCount();
+      if (selectedCount === 0) {
+        alert('Veuillez sélectionner au moins un objet à déménager');
+        return;
+      }
+      answers.items = Object.keys(itemQuantities).filter(id => itemQuantities[id] > 0);
+      answers.itemQuantities = { ...itemQuantities };
+    }
+    
     currentQuestionIndex++;
     render();
   }
@@ -1554,24 +1795,21 @@
   }
   
   function submitForm() {
-    // Récupérer les champs du dernier écran
+    // Récupérer les champs si on est sur la dernière question
     const name = document.getElementById('input-fullName')?.value;
     const phone = document.getElementById('input-phone')?.value;
     const date = document.getElementById('input-date')?.value;
     const time = document.getElementById('input-time')?.value;
     
-    if (!name || !phone) {
-      alert('Veuillez renseigner votre nom et téléphone');
-      return;
+    if (name && phone) {
+      answers.fullName = name;
+      answers.phone = phone;
+      answers.date = date;
+      answers.time = time;
+      answers.distanceKm = distanceKm;
+      answers.items = Object.keys(itemQuantities).filter(id => itemQuantities[id] > 0);
+      answers.itemQuantities = { ...itemQuantities };
     }
-    
-    answers.fullName = name;
-    answers.phone = phone;
-    answers.date = date;
-    answers.time = time;
-    answers.distanceKm = distanceKm;
-    answers.items = Object.keys(itemQuantities).filter(id => itemQuantities[id] > 0);
-    answers.itemQuantities = itemQuantities;
     
     calculateQuote();
   }
@@ -1591,7 +1829,6 @@
       
       quoteResult = await response.json();
       
-      // Afficher la page de succès
       container.innerHTML = `
         <div class="rw-success-state show">
           <div class="rw-success-icon">🎉</div>
