@@ -1244,9 +1244,14 @@
   let suggestionsData = {};
 
   function attachEvents(question) {
-    if (question.type === 'address') {
+          if (question.type === 'address') {
       const input = document.getElementById(`addr-input-${question.id}`);
       const suggestBox = document.getElementById(`suggest-${question.id}`);
+      
+      // Restaurer la valeur sauvegardée
+      if (answers[question.id]) {
+        input.value = answers[question.id];
+      }
       
       input.addEventListener('input', () => {
         const query = input.value.trim();
@@ -1297,6 +1302,7 @@
                   if (addressCoords.departureAddress && addressCoords.arrivalAddress) {
                     calculateDistance();
                   }
+                  // Mettre à jour le prix immédiatement
                   updatePrice();
                 });
               });
@@ -1609,44 +1615,53 @@
       distIcon.textContent = '📏';
       distText.textContent = `Distance routière réelle : ${distanceKm} km`;
       
-      const distRow = document.getElementById('price-row-dist');
-      if (distRow && distanceKm > 0) {
-        distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
-      }
-      
+      // Mettre à jour l'affichage du prix immédiatement
       updatePrice();
+      
     } catch (err) {
       console.warn('ORS failed', err);
       badge.style.display = 'none';
+      distanceKm = 0;
       updatePrice();
     }
   }
-
 // ============================================================
 // SECTION 9 : MISE À JOUR PRIX
 // ============================================================
   function updatePrice() {
     let total = 38;
     
+    // 1. Distance
     const distPrice = distanceKm;
     total += distPrice;
+    
+    // Mettre à jour l'affichage de la distance
     const priceDist = document.getElementById('price-dist');
     if (priceDist) {
       priceDist.textContent = `${distPrice}€`;
       const distRow = document.getElementById('price-row-dist');
-      if (distRow && distanceKm > 0) {
-        distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
+      if (distRow) {
+        if (distanceKm > 0) {
+          distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
+        } else {
+          distRow.querySelector('span:first-child').textContent = `Distance`;
+        }
       }
     }
     
+    // 2. Objets
     let itemsPrice = 0;
     for (const item of itemsList) {
       itemsPrice += (itemQuantities[item.id] || 0) * item.price;
     }
     total += itemsPrice;
-    const priceItems = document.getElementById('price-items');
-    if (priceItems) priceItems.textContent = `${itemsPrice}€`;
     
+    const priceItems = document.getElementById('price-items');
+    if (priceItems) {
+      priceItems.textContent = `${itemsPrice}€`;
+    }
+    
+    // 3. Étages (uniquement si Montée en étage)
     let floorPrice = 0;
     if (answers.accessType === 'Montée en étage') {
       if (!answers.elevatorDepart && answers.floorDepart > 0) {
@@ -1657,52 +1672,71 @@
       }
     }
     total += floorPrice;
+    
     const rowFloor = document.getElementById('price-row-floor');
     const priceFloor = document.getElementById('price-floor');
-    if (floorPrice > 0) {
-      rowFloor.style.display = '';
-      priceFloor.textContent = `${floorPrice}€`;
-    } else {
-      rowFloor.style.display = 'none';
+    if (rowFloor && priceFloor) {
+      if (floorPrice > 0) {
+        rowFloor.style.display = '';
+        priceFloor.textContent = `${floorPrice}€`;
+      } else {
+        rowFloor.style.display = 'none';
+      }
     }
     
+    // 4. Déménageurs
     let moversPrice = 0;
     if (answers.movers === '2 déménageurs') moversPrice = 20;
     if (answers.movers === '3 déménageurs') moversPrice = 40;
     total += moversPrice;
+    
     const rowMovers = document.getElementById('price-row-movers');
     const priceMovers = document.getElementById('price-movers');
-    if (moversPrice > 0) {
-      rowMovers.style.display = '';
-      priceMovers.textContent = `${moversPrice}€`;
-    } else {
-      rowMovers.style.display = 'none';
+    if (rowMovers && priceMovers) {
+      if (moversPrice > 0) {
+        rowMovers.style.display = '';
+        priceMovers.textContent = `${moversPrice}€`;
+      } else {
+        rowMovers.style.display = 'none';
+      }
     }
     
+    // 5. Urgent
     let urgentPrice = 0;
+    let totalBeforeUrgent = total;
     if (answers.urgent) {
-      urgentPrice = Math.round(total * 0.2);
-      total = total * 1.2;
+      urgentPrice = Math.round(totalBeforeUrgent * 0.2);
+      total = totalBeforeUrgent + urgentPrice;
     }
+    
     const rowUrgent = document.getElementById('price-row-urgent');
     const priceUrgent = document.getElementById('price-urgent');
-    if (urgentPrice > 0) {
-      rowUrgent.style.display = '';
-      priceUrgent.textContent = `${urgentPrice}€`;
-    } else {
-      rowUrgent.style.display = 'none';
+    if (rowUrgent && priceUrgent) {
+      if (urgentPrice > 0) {
+        rowUrgent.style.display = '';
+        priceUrgent.textContent = `${urgentPrice}€`;
+      } else {
+        rowUrgent.style.display = 'none';
+      }
     }
     
+    // 6. Total final
     const totalEl = document.getElementById('price-total');
-    if (totalEl) totalEl.textContent = Math.round(total);
+    if (totalEl) {
+      totalEl.textContent = Math.round(total);
+    }
     
+    // 7. Mettre à jour le panneau final s'il existe
     const totalFinal = document.getElementById('price-total-final');
     if (totalFinal) {
       totalFinal.textContent = Math.round(total);
+      
       const priceDistFinal = document.getElementById('price-dist-final');
       if (priceDistFinal) priceDistFinal.textContent = `${distPrice}€`;
+      
       const priceItemsFinal = document.getElementById('price-items-final');
       if (priceItemsFinal) priceItemsFinal.textContent = `${itemsPrice}€`;
+      
       const priceFloorFinal = document.getElementById('price-floor-final');
       if (priceFloorFinal) {
         if (floorPrice > 0) {
@@ -1712,6 +1746,7 @@
           document.getElementById('price-row-floor-final').style.display = 'none';
         }
       }
+      
       const priceMoversFinal = document.getElementById('price-movers-final');
       if (priceMoversFinal) {
         if (moversPrice > 0) {
@@ -1721,6 +1756,7 @@
           document.getElementById('price-row-movers-final').style.display = 'none';
         }
       }
+      
       const priceUrgentFinal = document.getElementById('price-urgent-final');
       if (priceUrgentFinal) {
         if (urgentPrice > 0) {
@@ -1730,6 +1766,18 @@
           document.getElementById('price-row-urgent-final').style.display = 'none';
         }
       }
+    }
+    
+    // 8. Mettre à jour le récapitulatif si le formulaire final est affiché
+    const recapPills = document.getElementById('recap-pills');
+    if (recapPills) {
+      const pills = [];
+      if (answers.departureAddress) pills.push(`📍 ${answers.departureAddress.split(',')[0]}`);
+      if (answers.arrivalAddress) pills.push(`🏠 ${answers.arrivalAddress.split(',')[0]}`);
+      if (distanceKm > 0) pills.push(`📏 ${distanceKm} km`);
+      const itemCount = Object.values(itemQuantities).reduce((s, q) => s + q, 0);
+      if (itemCount > 0) pills.push(`📦 ${itemCount} objet(s)`);
+      recapPills.innerHTML = pills.map(p => `<span class="rw-recap-pill">${p}</span>`).join('');
     }
   }
 
