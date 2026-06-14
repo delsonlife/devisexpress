@@ -177,168 +177,110 @@
       "margin_high": 1.18
     }
   },
- {
-  "MOVING001": {
-    "active": true,
-    "company": {
-      "name": "TransitPro",
-      "domain": "devis-couvreur1.vercel.app",
-      "email": "contact@transitpro.fr"
+ "MOVING001": {
+  "active": true,
+  "company": {
+    "name": "TransitPro",
+    "domain": "devis-couvreur1.vercel.app",
+    "email": "contact@transitpro.fr"
+  },
+  "allowedOrigins": ["https://devis-couvreur1.vercel.app"],
+  "branding": {
+    "primaryColor": "#1e30d4"
+  },
+  "trade": "moving",
+  "calculator": "moving_v1",
+  "questions": [
+    {
+      "id": "departureAddress",
+      "type": "address",
+      "label": "Adresse de départ",
+      "placeholder": "Ex: 12 Rue de la Paix, Paris",
+      "required": true
     },
-    "allowedOrigins":  ["https://devis-couvreur1.vercel.app"],
-    "branding": {
-      "primaryColor": "#1e30d4"
+    {
+      "id": "arrivalAddress",
+      "type": "address",
+      "label": "Adresse d'arrivée",
+      "placeholder": "Ex: 8 Avenue Victor Hugo, Lyon",
+      "required": true
     },
-    "trade": "moving",
-    "calculator": "moving_v1",
-    "questions": [
-      {
-        "id": "departureAddress",
-        "type": "address",
-        "label": "Adresse de départ",
-        "placeholder": "Ex: 12 Rue de la Paix, Paris",
-        "icon": "departure",
-        "required": true
-      },
-      {
-        "id": "arrivalAddress",
-        "type": "address",
-        "label": "Adresse d'arrivée",
-        "placeholder": "Ex: 8 Avenue Victor Hugo, Lyon",
-        "icon": "arrival",
-        "required": true
-      },
-      {
-        "id": "items",
-        "type": "multiselect",
-        "label": "Que transportez-vous ?",
-        "icon": "items",
-        "options": [
-          "Canapé",
-          "Lit double",
-          "Armoire",
-          "Table",
-          "Réfrigérateur",
-          "Lave-linge",
-          "Bureau",
-          "Carton"
-        ],
-        "volumes": {
-          "Canapé": 3.0,
-          "Lit double": 2.0,
-          "Armoire": 2.5,
-          "Table": 1.0,
-          "Réfrigérateur": 0.8,
-          "Lave-linge": 0.6,
-          "Bureau": 1.2,
-          "Carton": 0.1
-        },
-        "prices": {
-          "Canapé": 4,
-          "Lit double": 3,
-          "Armoire": 3,
-          "Table": 2,
-          "Réfrigérateur": 2,
-          "Lave-linge": 2,
-          "Bureau": 2,
-          "Carton": 0.5
-        },
-        "hasQuantity": true,
-        "required": false
-      },
-      {
-        "id": "accessType",
-        "type": "select",
-        "label": "Type d'accès",
-        "icon": "access",
-        "options": [
-          "Trottoir à trottoir",
-          "Montée en étage"
-        ],
-        "required": true
-      },
-      {
-        "id": "floorDepart",
-        "type": "floor",
-        "label": "Étage de départ",
-        "icon": "floor",
-        "hasElevator": true,
-        "min": 0,
-        "max": 10,
-        "required": false,
-        "dependsOn": { "accessType": "Montée en étage" }
-      },
-      {
-        "id": "floorArrival",
-        "type": "floor",
-        "label": "Étage d'arrivée",
-        "icon": "floor",
-        "hasElevator": true,
-        "min": 0,
-        "max": 10,
-        "required": false,
-        "dependsOn": { "accessType": "Montée en étage" }
-      },
-      {
-        "id": "urgent",
-        "type": "checkbox",
-        "label": "Transport urgent",
-        "icon": "urgent",
-        "description": "Majoration +20%",
-        "required": false
-      },
-      {
-        "id": "movers",
-        "type": "select",
-        "label": "Nombre de déménageurs",
-        "icon": "movers",
-        "options": [
-          "1 déménageur",
-          "2 déménageurs",
-          "3 déménageurs"
-        ],
-        "required": true
-      },
-      {
-        "id": "date",
-        "type": "date",
-        "label": "Date souhaitée",
-        "icon": "calendar",
-        "required": true
-      },
-      {
-        "id": "time",
-        "type": "select",
-        "label": "Heure",
-        "icon": "clock",
-        "options": ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
-        "required": true
-      },
-      {
-        "id": "fullName",
-        "type": "text",
-        "label": "Votre nom",
-        "placeholder": "Jean Dupont",
-        "icon": "user",
-        "required": true
-      },
-      {
-        "id": "phone",
-        "type": "tel",
-        "label": "Téléphone",
-        "placeholder": "06 12 34 56 78",
-        "icon": "phone",
-        "required": true
-      }
-    ],
-    "pricing": {
-      "basePrice": 38,
-      "pricePerKm": 1,
-      "floorSurcharge": 8,
-      "extraMoverPrice": 20,
-      "urgentMultiplier": 1.2,
-      "margin_low": 0.92,
-      "margin_high": 1.18
+    {
+      "id": "items",
+      "type": "multiselect",
+      "label": "Que transportez-vous ?",
+      "options": ["Canapé", "Lit double", "Armoire", "Table", "Réfrigérateur", "Lave-linge", "Bureau", "Carton"],
+      "required": false
+    },
+    {
+      "id": "accessType",
+      "type": "select",
+      "label": "Type d'accès",
+      "options": ["Trottoir à trottoir", "Montée en étage"],
+      "required": true
+    },
+    {
+      "id": "floorDepart",
+      "type": "floor",
+      "label": "Étage de départ",
+      "hasElevator": true,
+      "required": false
+    },
+    {
+      "id": "floorArrival",
+      "type": "floor",
+      "label": "Étage d'arrivée",
+      "hasElevator": true,
+      "required": false
+    },
+    {
+      "id": "urgent",
+      "type": "checkbox",
+      "label": "Transport urgent (+20%)",
+      "required": false
+    },
+    {
+      "id": "movers",
+      "type": "select",
+      "label": "Nombre de déménageurs",
+      "options": ["1 déménageur", "2 déménageurs", "3 déménageurs"],
+      "required": true
+    },
+    {
+      "id": "date",
+      "type": "date",
+      "label": "Date souhaitée",
+      "required": true
+    },
+    {
+      "id": "time",
+      "type": "select",
+      "label": "Heure",
+      "options": ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+      "required": true
+    },
+    {
+      "id": "fullName",
+      "type": "text",
+      "label": "Votre nom",
+      "placeholder": "Jean Dupont",
+      "required": true
+    },
+    {
+      "id": "phone",
+      "type": "tel",
+      "label": "Téléphone",
+      "placeholder": "06 12 34 56 78",
+      "required": true
     }
+  ],
+  "pricing": {
+    "basePrice": 38,
+    "pricePerKm": 1,
+    "floorSurcharge": 8,
+    "extraMoverPrice": 20,
+    "margin_low": 0.92,
+    "margin_high": 1.18
   }
 }
+}  
