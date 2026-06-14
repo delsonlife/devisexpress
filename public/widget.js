@@ -927,7 +927,6 @@
     if (currentQuestionIndex < questions.length) {
       renderQuestion(container, questions[currentQuestionIndex], currentQuestionIndex, questions.length);
     } else {
-      // Fin du questionnaire, afficher le formulaire final
       renderFinalForm();
     }
   }
@@ -962,7 +961,7 @@
                    placeholder="${question.placeholder}" autocomplete="off">
             <div class="rw-addr-suggestions" id="suggest-${question.id}"></div>
           </div>
-          ${question.id === 'arrivalAddress' ? '<div class="rw-dist-badge" id="dist-badge"><span id="dist-icon">📏</span><span id="dist-text">Calcul de la distance...</span></div>' : ''}
+          ${question.id === 'arrivalAddress' ? '<div class="rw-dist-badge" id="dist-badge" style="display:none"><span id="dist-icon">📏</span><span id="dist-text"></span></div>' : ''}
         `;
         break;
         
@@ -983,7 +982,7 @@
               <div class="rw-access-card" data-value="Trottoir à trottoir">
                 <div class="rw-access-emoji">🚶</div>
                 <div class="rw-access-name">Trottoir à trottoir</div>
-                <div class="rw-access-desc">Chargement au pied de l'immeuble</div>
+                <div class="rw-access-desc">Chargement et déchargement au pied de l'immeuble</div>
               </div>
               <div class="rw-access-card" data-value="Montée en étage">
                 <div class="rw-access-emoji">🏢</div>
@@ -992,30 +991,11 @@
               </div>
             </div>
             <div id="floor-section" style="display:none">
-              <div class="rw-floor-grid">
-                <div class="rw-floor-card">
-                  <div class="rw-floor-title">Départ — Étage</div>
-                  <div class="rw-floor-counter">
-                    <button class="rw-qty-btn minus" data-side="depart" data-delta="-1">−</button>
-                    <span class="rw-floor-val" id="floor-depart-val">0</span>
-                    <button class="rw-qty-btn plus" data-side="depart" data-delta="1">+</button>
-                  </div>
-                  <div class="rw-asc-row">
-                    <button class="rw-toggle-pill on" data-side="depart" data-asc="true">Oui</button>
-                    <button class="rw-toggle-pill" data-side="depart" data-asc="false">Non</button>
-                  </div>
-                </div>
-                <div class="rw-floor-card">
-                  <div class="rw-floor-title">Arrivée — Étage</div>
-                  <div class="rw-floor-counter">
-                    <button class="rw-qty-btn minus" data-side="arrival" data-delta="-1">−</button>
-                    <span class="rw-floor-val" id="floor-arrival-val">0</span>
-                    <button class="rw-qty-btn plus" data-side="arrival" data-delta="1">+</button>
-                  </div>
-                  <div class="rw-asc-row">
-                    <button class="rw-toggle-pill on" data-side="arrival" data-asc="true">Oui</button>
-                    <button class="rw-toggle-pill" data-side="arrival" data-asc="false">Non</button>
-                  </div>
+              <div class="rw-floor-card" style="width:100%">
+                <div class="rw-floor-title">Ascenseur ?</div>
+                <div class="rw-asc-row" style="justify-content:flex-start">
+                  <button class="rw-toggle-pill on" data-asc="true" id="asc-oui">Oui</button>
+                  <button class="rw-toggle-pill" data-asc="false" id="asc-non">Non</button>
                 </div>
               </div>
             </div>
@@ -1075,7 +1055,6 @@
         break;
     }
     
-    // Navigation
     const buttonText = isLastQuestion ? 'Obtenir mon devis' : 'Suivant';
     const buttonClass = isLastQuestion ? 'rw-btn-submit' : 'rw-btn-next';
     
@@ -1087,7 +1066,6 @@
           </div>
         </div>
         
-        <!-- Price Panel -->
         <div class="rw-price-panel">
           <div class="rw-price-label">Prix estimé</div>
           <div class="rw-price-amount"><span id="price-total">38</span>€</div>
@@ -1096,12 +1074,13 @@
             <div class="rw-price-row"><span>Base</span><span>38€</span></div>
             <div class="rw-price-row" id="price-row-dist"><span>Distance</span><span id="price-dist">0€</span></div>
             <div class="rw-price-row" id="price-row-items"><span>Objets</span><span id="price-items">0€</span></div>
-            <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Étages</span><span id="price-floor">0€</span></div>
+            <div class="rw-price-row" id="price-row-floor" style="display:none"><span>Supplément étage</span><span id="price-floor">0€</span></div>
             <div class="rw-price-row" id="price-row-movers" style="display:none"><span>Déménageurs</span><span id="price-movers">0€</span></div>
             <div class="rw-price-row" id="price-row-urgent" style="display:none"><span>Urgent +20%</span><span id="price-urgent">0€</span></div>
           </div>
           <div class="rw-price-reassure">
-            
+            <div class="rw-price-reassure-item">✅ Prix fixe, aucun frais caché</div>
+            <div class="rw-price-reassure-item">📞 Rappel sous 2 heures</div>
           </div>
         </div>
       </div>
@@ -1109,7 +1088,6 @@
     
     container.innerHTML = html;
     
-    // Attacher les événements
     attachEvents(question);
     
     document.getElementById('rw-prev')?.addEventListener('click', prevStep);
@@ -1174,7 +1152,6 @@
           </div>
         </div>
         
-        <!-- Price Panel -->
         <div class="rw-price-panel">
           <div class="rw-price-label">Prix estimé</div>
           <div class="rw-price-amount"><span id="price-total-final">38</span>€</div>
@@ -1183,7 +1160,7 @@
             <div class="rw-price-row"><span>Base</span><span>38€</span></div>
             <div class="rw-price-row" id="price-row-dist-final"><span>Distance</span><span id="price-dist-final">0€</span></div>
             <div class="rw-price-row" id="price-row-items-final"><span>Objets</span><span id="price-items-final">0€</span></div>
-            <div class="rw-price-row" id="price-row-floor-final" style="display:none"><span>Étages</span><span id="price-floor-final">0€</span></div>
+            <div class="rw-price-row" id="price-row-floor-final" style="display:none"><span>Supplément étage</span><span id="price-floor-final">0€</span></div>
             <div class="rw-price-row" id="price-row-movers-final" style="display:none"><span>Déménageurs</span><span id="price-movers-final">0€</span></div>
             <div class="rw-price-row" id="price-row-urgent-final" style="display:none"><span>Urgent +20%</span><span id="price-urgent-final">0€</span></div>
           </div>
@@ -1197,13 +1174,11 @@
     
     container.innerHTML = html;
     
-    // Initialiser la date par défaut
     const today = new Date();
     today.setDate(today.getDate() + 7);
     const dateInput = document.getElementById('input-date');
     if (dateInput) dateInput.value = today.toISOString().split('T')[0];
     
-    // Mettre à jour le récapitulatif et le prix
     updateRecapAndPrice();
     
     document.getElementById('rw-prev-final')?.addEventListener('click', () => {
@@ -1235,21 +1210,16 @@
   }
 
   function updateRecapAndPrice() {
-    // Récapitulatif
     const recapPills = document.getElementById('recap-pills');
     if (recapPills) {
       const pills = [];
       if (answers.departureAddress) pills.push(`📍 ${answers.departureAddress.split(',')[0]}`);
       if (answers.arrivalAddress) pills.push(`🏠 ${answers.arrivalAddress.split(',')[0]}`);
       if (distanceKm) pills.push(`📏 ${distanceKm} km`);
-      
       const itemCount = Object.values(itemQuantities).reduce((s, q) => s + q, 0);
       if (itemCount > 0) pills.push(`📦 ${itemCount} objet(s)`);
-      
       recapPills.innerHTML = pills.map(p => `<span class="rw-recap-pill">${p}</span>`).join('');
     }
-    
-    // Prix
     updatePriceFinal();
   }
 
@@ -1270,14 +1240,8 @@
     if (priceItems) priceItems.textContent = `${itemsPrice}€`;
     
     let floorPrice = 0;
-    if (answers.accessType === 'Montée en étage') {
-      const floorDepart = answers.floorDepart || 0;
-      const floorArrival = answers.floorArrival || 0;
-      const elevatorDepart = answers.elevatorDepart !== false;
-      const elevatorArrival = answers.elevatorArrival !== false;
-      
-      if (!elevatorDepart && floorDepart > 0) floorPrice += floorDepart * 8;
-      if (!elevatorArrival && floorArrival > 0) floorPrice += floorArrival * 8;
+    if (answers.accessType === 'Montée en étage' && answers.hasElevator === false) {
+      floorPrice = 30;
     }
     total += floorPrice;
     const rowFloor = document.getElementById('price-row-floor-final');
@@ -1319,8 +1283,7 @@
     const totalEl = document.getElementById('price-total-final');
     if (totalEl) totalEl.textContent = Math.round(total);
   }
-
-// ============================================================
+  // ============================================================
 // SECTION 6 : ÉVÉNEMENTS PAR TYPE DE QUESTION
 // ============================================================
   let addressTimers = {};
@@ -1402,6 +1365,9 @@
       if (!answers.accessType) {
         answers.accessType = 'Trottoir à trottoir';
       }
+      if (answers.hasElevator === undefined) {
+        answers.hasElevator = true;
+      }
       
       document.querySelectorAll('.rw-access-card').forEach(card => {
         const cardValue = card.dataset.value;
@@ -1418,16 +1384,17 @@
           const floorSection = document.getElementById('floor-section');
           if (value === 'Montée en étage') {
             floorSection.style.display = 'block';
+            const ascOui = document.getElementById('asc-oui');
+            const ascNon = document.getElementById('asc-non');
+            if (answers.hasElevator) {
+              ascOui.classList.add('on');
+              ascNon.classList.remove('on');
+            } else {
+              ascOui.classList.remove('on');
+              ascNon.classList.add('on');
+            }
           } else {
             floorSection.style.display = 'none';
-            answers.floorDepart = 0;
-            answers.floorArrival = 0;
-            answers.elevatorDepart = true;
-            answers.elevatorArrival = true;
-            const floorDepartVal = document.getElementById('floor-depart-val');
-            const floorArrivalVal = document.getElementById('floor-arrival-val');
-            if (floorDepartVal) floorDepartVal.textContent = '0';
-            if (floorArrivalVal) floorArrivalVal.textContent = '0';
           }
           updatePrice();
         });
@@ -1438,38 +1405,25 @@
         floorSectionEl.style.display = 'block';
       }
       
-      document.querySelectorAll('.rw-qty-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const side = btn.dataset.side;
-          const delta = parseInt(btn.dataset.delta);
-          const current = answers[`floor${side === 'depart' ? 'Depart' : 'Arrival'}`] || 0;
-          const newVal = Math.max(0, current + delta);
-          answers[`floor${side === 'depart' ? 'Depart' : 'Arrival'}`] = newVal;
-          const valEl = document.getElementById(`floor-${side}-val`);
-          if (valEl) valEl.textContent = newVal;
-          updatePrice();
-        });
-      });
+      const ascOui = document.getElementById('asc-oui');
+      const ascNon = document.getElementById('asc-non');
       
-      document.querySelectorAll('.rw-toggle-pill').forEach(pill => {
-        const side = pill.dataset.side;
-        const asc = pill.dataset.asc === 'true';
-        if (answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] === undefined) {
-          answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] = true;
-        }
-        if (answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] === asc) {
-          pill.classList.add('on');
-        }
-        
-        pill.addEventListener('click', () => {
-          const newAsc = pill.dataset.asc === 'true';
-          answers[`elevator${side === 'depart' ? 'Depart' : 'Arrival'}`] = newAsc;
-          const container = pill.parentElement;
-          container.querySelectorAll('.rw-toggle-pill').forEach(p => p.classList.remove('on'));
-          pill.classList.add('on');
+      if (ascOui) {
+        ascOui.addEventListener('click', () => {
+          answers.hasElevator = true;
+          ascOui.classList.add('on');
+          ascNon.classList.remove('on');
           updatePrice();
         });
-      });
+      }
+      if (ascNon) {
+        ascNon.addEventListener('click', () => {
+          answers.hasElevator = false;
+          ascNon.classList.add('on');
+          ascOui.classList.remove('on');
+          updatePrice();
+        });
+      }
     }
     
     if (question.id === 'movers') {
@@ -1529,8 +1483,7 @@
       });
     }
   }
-
-// ============================================================
+  // ============================================================
 // SECTION 7 : OBJETS (MULTISELECT)
 // ============================================================
   const itemsList = [
@@ -1617,8 +1570,7 @@
     if (pctEl) pctEl.textContent = `${pct}%`;
     if (fillEl) fillEl.style.width = `${pct}%`;
   }
-
-// ============================================================
+  // ============================================================
 // SECTION 8 : DISTANCE OPENROUTESERVICE
 // ============================================================
   const ORS_KEY = '5b3ce3597851110001cf6248a2e2b44aa88e41db9c515d4258e8c668';
@@ -1661,28 +1613,35 @@
       distIcon.textContent = '📏';
       distText.textContent = `Distance routière réelle : ${distanceKm} km`;
       
+      const distRow = document.getElementById('price-row-dist');
+      if (distRow) {
+        distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
+      }
+      
       updatePrice();
     } catch (err) {
       console.warn('ORS failed', err);
       badge.style.display = 'none';
-      distanceKm = 0;
       updatePrice();
     }
   }
-
-// ============================================================
+  // ============================================================
 // SECTION 9 : MISE À JOUR PRIX
 // ============================================================
   function updatePrice() {
     let total = 38;
     
-    // Distance
     const distPrice = distanceKm;
     total += distPrice;
     const priceDist = document.getElementById('price-dist');
-    if (priceDist) priceDist.textContent = `${distPrice}€`;
+    if (priceDist) {
+      priceDist.textContent = `${distPrice}€`;
+      const distRow = document.getElementById('price-row-dist');
+      if (distRow && distanceKm > 0) {
+        distRow.querySelector('span:first-child').textContent = `Distance (${distanceKm} km)`;
+      }
+    }
     
-    // Objets
     let itemsPrice = 0;
     for (const item of itemsList) {
       itemsPrice += (itemQuantities[item.id] || 0) * item.price;
@@ -1691,16 +1650,9 @@
     const priceItems = document.getElementById('price-items');
     if (priceItems) priceItems.textContent = `${itemsPrice}€`;
     
-    // Étages
     let floorPrice = 0;
-    if (answers.accessType === 'Montée en étage') {
-      const floorDepart = answers.floorDepart || 0;
-      const floorArrival = answers.floorArrival || 0;
-      const elevatorDepart = answers.elevatorDepart !== false;
-      const elevatorArrival = answers.elevatorArrival !== false;
-      
-      if (!elevatorDepart && floorDepart > 0) floorPrice += floorDepart * 8;
-      if (!elevatorArrival && floorArrival > 0) floorPrice += floorArrival * 8;
+    if (answers.accessType === 'Montée en étage' && answers.hasElevator === false) {
+      floorPrice = 30;
     }
     total += floorPrice;
     const rowFloor = document.getElementById('price-row-floor');
@@ -1712,7 +1664,6 @@
       rowFloor.style.display = 'none';
     }
     
-    // Déménageurs
     let moversPrice = 0;
     if (answers.movers === '2 déménageurs') moversPrice = 20;
     if (answers.movers === '3 déménageurs') moversPrice = 40;
@@ -1726,7 +1677,6 @@
       rowMovers.style.display = 'none';
     }
     
-    // Urgent
     let urgentPrice = 0;
     if (answers.urgent) {
       urgentPrice = Math.round(total * 0.2);
@@ -1743,6 +1693,41 @@
     
     const totalEl = document.getElementById('price-total');
     if (totalEl) totalEl.textContent = Math.round(total);
+    
+    // Mettre à jour aussi le panneau final s'il existe
+    const totalFinal = document.getElementById('price-total-final');
+    if (totalFinal) totalFinal.textContent = Math.round(total);
+    const priceDistFinal = document.getElementById('price-dist-final');
+    if (priceDistFinal) priceDistFinal.textContent = `${distPrice}€`;
+    const priceItemsFinal = document.getElementById('price-items-final');
+    if (priceItemsFinal) priceItemsFinal.textContent = `${itemsPrice}€`;
+    const priceFloorFinal = document.getElementById('price-floor-final');
+    if (priceFloorFinal) {
+      if (floorPrice > 0) {
+        document.getElementById('price-row-floor-final').style.display = '';
+        priceFloorFinal.textContent = `${floorPrice}€`;
+      } else {
+        document.getElementById('price-row-floor-final').style.display = 'none';
+      }
+    }
+    const priceMoversFinal = document.getElementById('price-movers-final');
+    if (priceMoversFinal) {
+      if (moversPrice > 0) {
+        document.getElementById('price-row-movers-final').style.display = '';
+        priceMoversFinal.textContent = `${moversPrice}€`;
+      } else {
+        document.getElementById('price-row-movers-final').style.display = 'none';
+      }
+    }
+    const priceUrgentFinal = document.getElementById('price-urgent-final');
+    if (priceUrgentFinal) {
+      if (urgentPrice > 0) {
+        document.getElementById('price-row-urgent-final').style.display = '';
+        priceUrgentFinal.textContent = `${urgentPrice}€`;
+      } else {
+        document.getElementById('price-row-urgent-final').style.display = 'none';
+      }
+    }
   }
 
 // ============================================================
